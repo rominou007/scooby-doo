@@ -1,6 +1,6 @@
 <?php
 //Différente méthode de connexion à la base de données en fonction de l'environnement si mac ou windows (mac rajoutée les ports 3306/8889)
-$dsn = "mysql:host=localhost;dbname=gestionstock;charset=utf8";
+$dsn = "mysql:host=localhost;dbname=student_five;charset=utf8";
 $user = "root";
 $pass = "";
 
