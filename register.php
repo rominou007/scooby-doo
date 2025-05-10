@@ -2,37 +2,38 @@
     session_start();
     require("db.php");
 
-    //  Vérification si l'utilisateur est connecté et est un admin
-     if (!isset($_SESSION["id"]) || $_SESSION["access"] != 0) {
-         // Rediriger vers la page de connexion ou une page d'erreur
-         header("Location: index.php");
-    exit(); }
+    // //  Vérification si l'utilisateur est connecté et est un admin
+    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 0) {
+    //      // Rediriger vers la page de connexion ou une page d'erreur
+    //      header("Location: index.php");
+    // exit(); }
 
     // Déterminer le type de formulaire à afficher (par défaut: élève)
-    $form_type = isset($_GET['type']) ? $_GET['type'] : 'eleve';
+    $form_type = isset($_GET['type']) ? $_GET['type'] : 'student';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
     $username = trim($_POST["username"]);
-    $name = trim($_POST["name"]);
-    $email = trim($_POST["mail"]);
-    $phone = trim($_POST["phone"]);
-    $sexe = $_POST["sexe"];
+    $first_name = trim($_POST["first_name"]);
+    $last_name = trim($_POST["last_name"]);
+    $email = trim($_POST["email"]);
+    $phone_number = trim($_POST["phone_number"]);
+    $address = trim($_POST["address"]);
     $password = $_POST["password"];
     $confirm_password = $_POST["password_conf"];
     
-    // Récupérer le niveau d'accès selon le type de formulaire
-    $access_level = 2; // Par défaut: élève
+    // Récupérer le rôle selon le type de formulaire
+    $role = 'student'; // Par défaut
     
     if (isset($_POST["form_type"])) {
         switch ($_POST["form_type"]) {
             case 'admin':
-                $access_level = 0; // Administrateur
+                $role = 'admin';
                 break;
-            case 'prof':
-                $access_level = 1; // Professeur
+            case 'professor':
+                $role = 'professor';
                 break;
             default:
-                $access_level = 2; // Élève
+                $role = 'student';
         }
     }
 
@@ -46,12 +47,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Hacher le mot de passe pour plus de sécurité
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-    //check id user already exists
-    $sql = "SELECT * FROM users WHERE mail = :mail";
+    // Vérifier si l'utilisateur existe déjà
+    $sql = "SELECT * FROM users WHERE email = :email OR username = :username";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute(['mail' => $email]);
+    $stmt->execute(['email' => $email, 'username' => $username]);
     $user = $stmt->fetch();
 
     if($user){
@@ -60,16 +61,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         // Insérer les données dans la base de données
-        $sql = "INSERT INTO users (name, username, mail, phone, mdp, sexe, access) VALUES (:name, :username, :mail, :phone, :mdp, :sexe, :access)";
+        $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
+                VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            'mail' => $email,
-            'name' => $name,
             'username' => $username,
-            'phone' => $phone,
-            'mdp' => $hashed_password,
-            'sexe' => $sexe,
-            "access" => $access_level
+            'password_hash' => $password_hash,
+            'email' => $email,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'role' => $role,
+            'phone_number' => $phone_number,
+            'address' => $address
         ]);
         header("location: index.php");
     } catch (PDOException $e) {
@@ -116,24 +119,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="col-md-12 mb-4">
                 <div class="row text-center">
                     <div class="col-md-4">
-                        <div id="admin-tab" class="form-option <?php echo ($form_type == 'admin') ? 'active bg-danger text-white' : 'bg-light'; ?>" onclick="switchForm('admin')">
+                        <div id="admin-tab" class="form-option <?php echo ($form_type == 'admin') ? 'active bg-danger text-black' : 'bg-light'; ?>" onclick="switchForm('admin')">
                             Administrateur
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div id="prof-tab" class="form-option <?php echo ($form_type == 'prof') ? 'active bg-success text-white' : 'bg-light'; ?>" onclick="switchForm('prof')">
+                        <div id="professor-tab" class="form-option <?php echo ($form_type == 'professor') ? 'active bg-success text-black' : 'bg-light'; ?>" onclick="switchForm('professor')">
                             Professeur
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div id="eleve-tab" class="form-option <?php echo ($form_type == 'eleve') ? 'active bg-primary text-white' : 'bg-light'; ?>" onclick="switchForm('eleve')">
+                        <div id="student-tab" class="form-option <?php echo ($form_type == 'student') ? 'active bg-primary text-black' : 'bg-light'; ?>" onclick="switchForm('student')">
                             Élève
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Ajouter ceci avant le formulaire dans register.php -->
+            <!-- Affichage des messages de status -->
             <?php if (isset($_GET['status'])): ?>
                 <div class="alert alert-<?php echo $_GET['status'] === 'success' ? 'success' : 'danger'; ?> mb-4">
                     <?php echo htmlspecialchars($_GET['message'] ?? ''); ?>
@@ -146,43 +149,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <h3 class="text-center text-danger mb-3">Créer un administrateur</h3>
                     <input type="hidden" name="form_type" value="admin">
                     
-                    <div class="mb-3">
-                        <label for="admin_username" class="form-label">Nom d'utilisateur</label>
-                        <input required type="text" class="form-control" id="admin_username" name="username">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_username" class="form-label">Nom d'utilisateur</label>
+                            <input required type="text" class="form-control" id="admin_username" name="username">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_email" class="form-label">Email</label>
+                            <input required type="email" class="form-control" id="admin_email" name="email">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_first_name" class="form-label">Prénom</label>
+                            <input required type="text" class="form-control" id="admin_first_name" name="first_name">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_last_name" class="form-label">Nom</label>
+                            <input required type="text" class="form-control" id="admin_last_name" name="last_name">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_password" class="form-label">Mot de passe</label>
+                            <input required type="password" class="form-control" id="admin_password" name="password">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_password_conf" class="form-label">Confirmer le mot de passe</label>
+                            <input required type="password" class="form-control" id="admin_password_conf" name="password_conf">
+                        </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="admin_name" class="form-label">Nom complet</label>
-                        <input required type="text" class="form-control" id="admin_name" name="name">
+                        <label for="admin_phone_number" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="admin_phone_number" name="phone_number">
                     </div>
                     
                     <div class="mb-3">
-                        <label for="admin_password" class="form-label">Mot de passe</label>
-                        <input required type="password" class="form-control" id="admin_password" name="password">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="admin_password_conf" class="form-label">Confirmer le mot de passe</label>
-                        <input required type="password" class="form-control" id="admin_password_conf" name="password_conf">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="admin_mail" class="form-label">Email</label>
-                        <input required type="email" class="form-control" id="admin_mail" name="mail">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="admin_phone" class="form-label">Téléphone</label>
-                        <input required type="text" class="form-control" id="admin_phone" name="phone">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="admin_sexe" class="form-label">Sexe</label>
-                        <select name="sexe" id="admin_sexe" class="form-control">
-                            <option value="homme">Homme</option>
-                            <option value="femme">Femme</option>
-                            <option value="autre">Autre</option>
-                        </select>
+                        <label for="admin_address" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="admin_address" name="address" rows="3"></textarea>
                     </div>
                     
                     <button type="submit" class="btn btn-danger w-100">Créer l'administrateur</button>
@@ -190,68 +200,70 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             
             <!-- Formulaire pour Professeur -->
-            <div id="prof-form" class="form-container <?php echo ($form_type == 'prof') ? 'active' : ''; ?>">
+            <div id="professor-form" class="form-container <?php echo ($form_type == 'professor') ? 'active' : ''; ?>">
                 <form action="" method="post" class="p-3 rounded">
                     <h3 class="text-center text-success mb-3">Créer un professeur</h3>
-                    <input type="hidden" name="form_type" value="prof">
+                    <input type="hidden" name="form_type" value="professor">
                     
-                    <div class="mb-3">
-                        <label for="prof_username" class="form-label">Nom d'utilisateur</label>
-                        <input required type="text" class="form-control" id="prof_username" name="username">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="prof_username" class="form-label">Nom d'utilisateur</label>
+                            <input required type="text" class="form-control" id="prof_username" name="username">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="prof_email" class="form-label">Email</label>
+                            <input required type="email" class="form-control" id="prof_email" name="email">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="prof_first_name" class="form-label">Prénom</label>
+                            <input required type="text" class="form-control" id="prof_first_name" name="first_name">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="prof_last_name" class="form-label">Nom</label>
+                            <input required type="text" class="form-control" id="prof_last_name" name="last_name">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="prof_password" class="form-label">Mot de passe</label>
+                            <input required type="password" class="form-control" id="prof_password" name="password">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="prof_password_conf" class="form-label">Confirmer le mot de passe</label>
+                            <input required type="password" class="form-control" id="prof_password_conf" name="password_conf">
+                        </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="prof_name" class="form-label">Nom complet</label>
-                        <input required type="text" class="form-control" id="prof_name" name="name">
+                        <label for="prof_phone_number" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="prof_phone_number" name="phone_number">
                     </div>
                     
                     <div class="mb-3">
-                        <label for="prof_password" class="form-label">Mot de passe</label>
-                        <input required type="password" class="form-control" id="prof_password" name="password">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="prof_password_conf" class="form-label">Confirmer le mot de passe</label>
-                        <input required type="password" class="form-control" id="prof_password_conf" name="password_conf">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="prof_mail" class="form-label">Email</label>
-                        <input required type="email" class="form-control" id="prof_mail" name="mail">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="prof_phone" class="form-label">Téléphone</label>
-                        <input required type="text" class="form-control" id="prof_phone" name="phone">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="prof_matiere" class="form-label">Matière enseignée</label>
-                        <input type="text" class="form-control" id="prof_matiere" name="matiere">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="prof_sexe" class="form-label">Sexe</label>
-                        <select name="sexe" id="prof_sexe" class="form-control">
-                            <option value="homme">Homme</option>
-                            <option value="femme">Femme</option>
-                            <option value="autre">Autre</option>
-                        </select>
+                        <label for="prof_address" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="prof_address" name="address" rows="3"></textarea>
                     </div>
                     
                     <button type="submit" class="btn btn-success w-100">Créer le professeur</button>
                 </form>
             </div>
             
-            <!-- Formulaire pour Élève -->
-            <div id="eleve-form" class="form-container <?php echo ($form_type == 'eleve') ? 'active' : ''; ?>">
+            <!-- Formulaire pour Élève (import CSV) -->
+            <div id="student-form" class="form-container <?php echo ($form_type == 'student') ? 'active' : ''; ?>">
                 <form action="process_csv.php" method="post" class="p-3 rounded" enctype="multipart/form-data">
                     <h3 class="text-center text-primary mb-3">Importer une liste d'élèves</h3>
-                    <input type="hidden" name="form_type" value="eleve">
+                    <input type="hidden" name="form_type" value="student">
                     
                     <div class="mb-3">
-                        <label for="eleve_classe" class="form-label">Nom de la classe</label>
-                        <input required type="text" class="form-control" id="eleve_classe" name="classe" placeholder="Ex: Terminale S2">
+                        <label for="student_class" class="form-label">Nom de la classe</label>
+                        <input required type="text" class="form-control" id="student_class" name="class" placeholder="Ex: Terminale S2">
                     </div>
                     
                     <div class="mb-3">
@@ -260,10 +272,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="form-text text-muted mt-2">
                             <p>Format attendu du CSV :</p>
                             <ul>
-                                <li><strong>Colonnes</strong>: nom_utilisateur,nom_complet,email,telephone,sexe,mot_de_passe</li>
-                                <li><strong>Exemple</strong>: jdupont,Jean Dupont,jean.dupont@email.com,0123456789,homme,motdepasse123</li>
+                                <li><strong>Colonnes</strong>: username,first_name,last_name,email,phone_number,address,password</li>
+                                <li><strong>Exemple</strong>: jdupont,Jean,Dupont,jean.dupont@email.com,0123456789,"123 Rue Example, 75000 Paris",motdepasse123</li>
                             </ul>
-                            <p>La classe sera automatiquement ajoutée à tous les élèves du fichier.</p>
+                            <p>La classe sera automatiquement ajoutée comme information supplémentaire.</p>
                         </div>
                     </div>
                     
@@ -298,7 +310,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Appliquer le style approprié à l'onglet actif
             if (formType === 'admin') {
                 activeTab.classList.add('bg-danger', 'text-white');
-            } else if (formType === 'prof') {
+            } else if (formType === 'professor') {
                 activeTab.classList.add('bg-success', 'text-white');
             } else {
                 activeTab.classList.add('bg-primary', 'text-white');

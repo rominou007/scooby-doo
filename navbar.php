@@ -6,11 +6,11 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 // Vérification si l'utilisateur est connecté
-if (!isset($_SESSION['user_id'])) {
-    // Rediriger vers la page de connexion si non connecté
-    header('Location: '); // le registzre de la page de connexion (romain avec le fichier csv)
-    exit;
-}
+// if (!isset($_SESSION['user_id'])) {
+//     // Rediriger vers la page de connexion si non connecté
+//     header('Location: '); // le registzre de la page de connexion (romain avec le fichier csv)
+//     exit;
+// }
 
 // Récupération des informations utilisateur depuis la session
 $user_id = $_SESSION['user_id'];
@@ -41,7 +41,7 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
 
 <!-- Barre de navigation principale -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
+    <div class="container-fluid">
         <!-- Logo et nom du LMS -->
         <a class="navbar-brand" href="index.php">
             <img src="assets/logo.png" alt="Logo LMS" class="navbar-logo">  Plateforme LMS
