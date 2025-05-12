@@ -1,0 +1,37 @@
+.badge-notification {
+    position: relative;
+    top: -10px;
+    left: -10px;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+}
+
+.navbar-logo {
+    max-height: 40px;
+}
+
+@media (max-width: 992px) {
+    .navbar-nav .dropdown-menu {
+        position: static;
+        float: none;
+    }
+}
+
+.form-option {
+    cursor: pointer;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+.form-option.active {
+    border-bottom: 3px solid #007bff;
+}
+.form-container {
+    display: none;
+}
+.form-container.active {
+    display: block;
+}
+

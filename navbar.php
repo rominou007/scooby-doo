@@ -17,27 +17,6 @@ $user_id = $_SESSION['user_id'];
 $user_role = $_SESSION['role']; // 'student', 'professor', 'admin', 'staff'
 $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
 ?>
-<!-- CSS pour la barre de navigation -->
-<style>
-    .badge-notification {
-        position: relative;
-        top: -10px;
-        left: -10px;
-        padding: 0.25em 0.6em;
-        font-size: 75%;
-    }
-    
-    .navbar-logo {
-        max-height: 40px;
-    }
-    
-    @media (max-width: 992px) {
-        .navbar-nav .dropdown-menu {
-            position: static;
-            float: none;
-        }
-    }
-</style>
 
 <!-- Barre de navigation principale -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">

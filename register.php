@@ -11,72 +11,171 @@
     // Déterminer le type de formulaire à afficher (par défaut: élève)
     $form_type = isset($_GET['type']) ? $_GET['type'] : 'student';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
-    $username = trim($_POST["username"]);
-    $first_name = trim($_POST["first_name"]);
-    $last_name = trim($_POST["last_name"]);
-    $email = trim($_POST["email"]);
-    $phone_number = trim($_POST["phone_number"]);
-    $address = trim($_POST["address"]);
-    $password = $_POST["password"];
-    $confirm_password = $_POST["password_conf"];
-    
-    // Récupérer le rôle selon le type de formulaire
-    $role = 'student'; // Par défaut
-    
-    if (isset($_POST["form_type"])) {
-        switch ($_POST["form_type"]) {
-            case 'admin':
-                $role = 'admin';
-                break;
-            case 'professor':
-                $role = 'professor';
-                break;
-            default:
-                $role = 'student';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Traitement pour un élève unique
+    if (isset($_POST["form_type"]) && $_POST["form_type"] === "student" && !isset($_FILES["csv_file"])) {
+        $username = trim($_POST["username"]);
+        $first_name = trim($_POST["first_name"]);
+        $last_name = trim($_POST["last_name"]);
+        $email = trim($_POST["email"]);
+        $phone_number = trim($_POST["phone_number"]);
+        $address = trim($_POST["address"]);
+        $password = $_POST["password"];
+        $confirm_password = $_POST["password_conf"];
+        $class_id = $_POST["class_id"];
+        
+        if (strlen($password) < 8) {
+            die("Le mot de passe doit contenir au moins 8 caractères");
+        }
+
+        // Vérifier si les mots de passe correspondent
+        if ($password !== $confirm_password) {
+            die("Les mots de passe ne correspondent pas !");
+        }
+
+        // Hacher le mot de passe
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+        // Vérifier si l'utilisateur existe déjà
+        $sql = "SELECT * FROM users WHERE email = :email OR username = :username";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['email' => $email, 'username' => $username]);
+        $user = $stmt->fetch();
+
+        if ($user) {
+            die("Cet utilisateur existe déjà !");
+        }
+        
+        try {
+            // Démarrer une transaction
+            $pdo->beginTransaction();
+            
+            // Créer une nouvelle classe si nécessaire
+            if ($class_id === 'new' && isset($_POST['new_class_name'])) {
+                $new_class_name = trim($_POST['new_class_name']);
+                $new_class_year = isset($_POST['new_class_year']) ? intval($_POST['new_class_year']) : date('Y');
+                $new_class_desc = trim($_POST['new_class_desc'] ?? '');
+                
+                $createClassSql = "INSERT INTO classes (class_name, enrollment_year, description) 
+                                  VALUES (:class_name, :enrollment_year, :description)";
+                $createClassStmt = $pdo->prepare($createClassSql);
+                $createClassStmt->execute([
+                    'class_name' => $new_class_name,
+                    'enrollment_year' => $new_class_year,
+                    'description' => $new_class_desc
+                ]);
+                
+                $class_id = $pdo->lastInsertId();
+            }
+            
+            // Insérer l'élève
+            $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
+                    VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'username' => $username,
+                'password_hash' => $password_hash,
+                'email' => $email,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'role' => 'student',
+                'phone_number' => $phone_number,
+                'address' => $address
+            ]);
+            
+            $student_id = $pdo->lastInsertId();
+            
+            // Si une classe a été sélectionnée, associer l'élève à cette classe
+            if ($class_id && $class_id !== 'new') {
+                $assignSql = "INSERT INTO student_classes (student_id, class_id) VALUES (:student_id, :class_id)";
+                $assignStmt = $pdo->prepare($assignSql);
+                $assignStmt->execute([
+                    'student_id' => $student_id,
+                    'class_id' => $class_id
+                ]);
+            }
+            
+            // Valider la transaction
+            $pdo->commit();
+            
+            // Redirection
+            header("location: register.php?type=student&status=success&message=".urlencode("L'élève a été créé avec succès !"));
+            exit();
+        } catch (PDOException $e) {
+            // Annuler la transaction en cas d'erreur
+            $pdo->rollBack();
+            die("Erreur lors de l'enregistrement : " . $e->getMessage());
         }
     }
+    
+    // Traitement pour les autres types d'utilisateurs (code existant)
+    elseif ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
+        $username = trim($_POST["username"]);
+        $first_name = trim($_POST["first_name"]);
+        $last_name = trim($_POST["last_name"]);
+        $email = trim($_POST["email"]);
+        $phone_number = trim($_POST["phone_number"]);
+        $address = trim($_POST["address"]);
+        $password = $_POST["password"];
+        $confirm_password = $_POST["password_conf"];
+        
+        // Récupérer le rôle selon le type de formulaire
+        $role = 'student'; // Par défaut
+        
+        if (isset($_POST["form_type"])) {
+            switch ($_POST["form_type"]) {
+                case 'admin':
+                    $role = 'admin';
+                    break;
+                case 'professor':
+                    $role = 'professor';
+                    break;
+                default:
+                    $role = 'student';
+            }
+        }
 
-    if(strlen($password) < 8){
-        die("Le mot de passe doit contenir au moins 8 caractères");
-    }
+        if(strlen($password) < 8){
+            die("Le mot de passe doit contenir au moins 8 caractères");
+        }
 
-    // Vérifier si les mots de passe correspondent
-    if ($password !== $confirm_password) {
-        die("Les mots de passe ne correspondent pas !");
-    }
+        // Vérifier si les mots de passe correspondent
+        if ($password !== $confirm_password) {
+            die("Les mots de passe ne correspondent pas !");
+        }
 
-    // Hacher le mot de passe pour plus de sécurité
-    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        // Hacher le mot de passe pour plus de sécurité
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-    // Vérifier si l'utilisateur existe déjà
-    $sql = "SELECT * FROM users WHERE email = :email OR username = :username";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['email' => $email, 'username' => $username]);
-    $user = $stmt->fetch();
-
-    if($user){
-        die("Cet utilisateur existe déjà !");
-    }
-
-    try {
-        // Insérer les données dans la base de données
-        $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
-                VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+        // Vérifier si l'utilisateur existe déjà
+        $sql = "SELECT * FROM users WHERE email = :email OR username = :username";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            'username' => $username,
-            'password_hash' => $password_hash,
-            'email' => $email,
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'role' => $role,
-            'phone_number' => $phone_number,
-            'address' => $address
-        ]);
-        header("location: index.php");
-    } catch (PDOException $e) {
-        die("Erreur lors de l'enregistrement : " . $e->getMessage());
+        $stmt->execute(['email' => $email, 'username' => $username]);
+        $user = $stmt->fetch();
+
+        if($user){
+            die("Cet utilisateur existe déjà !");
+        }
+
+        try {
+            // Insérer les données dans la base de données
+            $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
+                    VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'username' => $username,
+                'password_hash' => $password_hash,
+                'email' => $email,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'role' => $role,
+                'phone_number' => $phone_number,
+                'address' => $address
+            ]);
+            header("location: index.php");
+        } catch (PDOException $e) {
+            die("Erreur lors de l'enregistrement : " . $e->getMessage());
+        }
     }
 }
 ?>
@@ -88,25 +187,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des utilisateurs</title>
     <?php include("link.php"); ?>
-    <style>
-        .form-option {
-            cursor: pointer;
-            padding: 10px 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            text-align: center;
-        }
-        .form-option.active {
-            border-bottom: 3px solid #007bff;
-        }
-        .form-container {
-            display: none;
-        }
-        .form-container.active {
-            display: block;
-        }
-    </style>
 </head>
 
 <?php include("navbar.php"); ?>
@@ -119,17 +199,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
             <div class="col-md-12 mb-4">
                 <div class="row text-center">
                     <div class="col-md-4">
-                        <div id="admin-tab" class="form-option <?php echo ($form_type == 'admin') ? 'active bg-danger text-black' : 'bg-light'; ?>" onclick="switchForm('admin')">
+                        <div id="admin-tab" class="form-option <?php echo ($form_type == 'admin') ? 'active bg-danger text-dark' : 'bg-light'; ?>" onclick="switchForm('admin')">
                             Administrateur
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div id="professor-tab" class="form-option <?php echo ($form_type == 'professor') ? 'active bg-success text-black' : 'bg-light'; ?>" onclick="switchForm('professor')">
+                        <div id="professor-tab" class="form-option <?php echo ($form_type == 'professor') ? 'active bg-success text-dark' : 'bg-light'; ?>" onclick="switchForm('professor')">
                             Professeur
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div id="student-tab" class="form-option <?php echo ($form_type == 'student') ? 'active bg-primary text-black' : 'bg-light'; ?>" onclick="switchForm('student')">
+                        <div id="student-tab" class="form-option <?php echo ($form_type == 'student') ? 'active bg-primary text-dark' : 'bg-light'; ?>" onclick="switchForm('student')">
                             Élève
                         </div>
                     </div>
@@ -257,30 +337,152 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
             
             <!-- Formulaire pour Élève (import CSV) -->
             <div id="student-form" class="form-container <?php echo ($form_type == 'student') ? 'active' : ''; ?>">
-                <form action="process_csv.php" method="post" class="p-3 rounded" enctype="multipart/form-data">
-                    <h3 class="text-center text-primary mb-3">Importer une liste d'élèves</h3>
-                    <input type="hidden" name="form_type" value="student">
-                    
-                    <div class="mb-3">
-                        <label for="student_class" class="form-label">Nom de la classe</label>
-                        <input required type="text" class="form-control" id="student_class" name="class" placeholder="Ex: Terminale S2">
+                <div class="mb-4">
+                    <ul class="nav nav-tabs" id="studentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="importcsv-tab" data-bs-toggle="tab" data-bs-target="#importcsv" type="button" role="tab" aria-controls="importcsv" aria-selected="true">Importer une classe</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="singlestudent-tab" data-bs-toggle="tab" data-bs-target="#singlestudent" type="button" role="tab" aria-controls="singlestudent" aria-selected="false">Ajouter un élève</button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="tab-content" id="studentTabsContent">
+                    <!-- Import CSV -->
+                    <div class="tab-pane fade show active" id="importcsv" role="tabpanel" aria-labelledby="importcsv-tab">
+                        <form action="process_csv.php" method="post" class="p-3 rounded" enctype="multipart/form-data">
+                            <h3 class="text-center text-primary mb-3">Importer une liste d'élèves</h3>
+                            <input type="hidden" name="form_type" value="student">
+                            
+                            <div class="mb-3">
+                                <label for="student_class" class="form-label">Nom de la classe</label>
+                                <input required type="text" class="form-control" id="student_class" name="class" placeholder="Ex: Terminale S2">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="enrollment_year" class="form-label">Année d'entrée</label>
+                                <input required type="number" class="form-control" id="enrollment_year" name="enrollment_year" placeholder="Ex: 2023" min="2000" max="2100" value="<?php echo date('Y'); ?>">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="class_description" class="form-label">Description de la classe</label>
+                                <input type="text" class="form-control" id="class_description" name="class_description">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="csv_import" class="form-label">Fichier CSV des élèves</label>
+                                <input required type="file" class="form-control" id="csv_import" name="csv_file" accept=".csv">
+                                <div class="form-text text-muted mt-2">
+                                    <p>Format attendu du CSV :</p>
+                                    <ul>
+                                        <li><strong>Colonnes</strong>: username,first_name,last_name,email,phone_number,address,password</li>
+                                        <li><strong>Exemple</strong>: jdupont,Jean,Dupont,jean.dupont@email.com,0123456789,"123 Rue Example, 75000 Paris",motdepasse123</li>
+                                    </ul>
+                                    <p>La classe sera automatiquement ajoutée comme information supplémentaire.</p>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Importer les élèves</button>
+                        </form>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="csv_import" class="form-label">Fichier CSV des élèves</label>
-                        <input required type="file" class="form-control" id="csv_import" name="csv_file" accept=".csv">
-                        <div class="form-text text-muted mt-2">
-                            <p>Format attendu du CSV :</p>
-                            <ul>
-                                <li><strong>Colonnes</strong>: username,first_name,last_name,email,phone_number,address,password</li>
-                                <li><strong>Exemple</strong>: jdupont,Jean,Dupont,jean.dupont@email.com,0123456789,"123 Rue Example, 75000 Paris",motdepasse123</li>
-                            </ul>
-                            <p>La classe sera automatiquement ajoutée comme information supplémentaire.</p>
-                        </div>
+                    <!-- Ajout d'un élève unique -->
+                    <div class="tab-pane fade" id="singlestudent" role="tabpanel" aria-labelledby="singlestudent-tab">
+                        <form action="" method="post" class="p-3 rounded">
+                            <h3 class="text-center text-primary mb-3">Créer un élève</h3>
+                            <input type="hidden" name="form_type" value="student">
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_username" class="form-label">Nom d'utilisateur</label>
+                                    <input required type="text" class="form-control" id="student_username" name="username">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_email" class="form-label">Email</label>
+                                    <input required type="email" class="form-control" id="student_email" name="email">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_first_name" class="form-label">Prénom</label>
+                                    <input required type="text" class="form-control" id="student_first_name" name="first_name">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_last_name" class="form-label">Nom</label>
+                                    <input required type="text" class="form-control" id="student_last_name" name="last_name">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_password" class="form-label">Mot de passe</label>
+                                    <input required type="password" class="form-control" id="student_password" name="password">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_password_conf" class="form-label">Confirmer le mot de passe</label>
+                                    <input required type="password" class="form-control" id="student_password_conf" name="password_conf">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="student_phone_number" class="form-label">Téléphone</label>
+                                    <input type="text" class="form-control" id="student_phone_number" name="phone_number">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="single_student_class" class="form-label">Classe</label>
+                                    <select class="form-select" id="single_student_class" name="class_id" required>
+                                        <option value="">Sélectionner une classe</option>
+                                        <?php
+                                        // Récupérer la liste des classes existantes
+                                        try {
+                                            $classesSql = "SELECT class_id, class_name, enrollment_year FROM classes ORDER BY enrollment_year DESC, class_name";
+                                            $classesStmt = $pdo->query($classesSql);
+                                            while ($class = $classesStmt->fetch()) {
+                                                echo '<option value="' . $class['class_id'] . '">' . htmlspecialchars($class['class_name']) . ' (' . $class['enrollment_year'] . ')</option>';
+                                            }
+                                        } catch (PDOException $e) {
+                                            // Gérer l'erreur en silence, l'utilisateur pourra toujours créer un élève sans classe
+                                        }
+                                        ?>
+                                        <option value="new">+ Créer une nouvelle classe</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Champs pour nouvelle classe (initialement cachés) -->
+                            <div id="new_class_fields" style="display:none;">
+                                <div class="row mt-3">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_class_name" class="form-label">Nom de la nouvelle classe</label>
+                                        <input type="text" class="form-control" id="new_class_name" name="new_class_name">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_class_year" class="form-label">Année d'entrée</label>
+                                        <input type="number" class="form-control" id="new_class_year" name="new_class_year" value="<?php echo date('Y'); ?>" min="2000" max="2100">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_class_desc" class="form-label">Description</label>
+                                        <input type="text" class="form-control" id="new_class_desc" name="new_class_desc">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="student_address" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="student_address" name="address" rows="3"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Créer l'élève</button>
+                        </form>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100">Importer les élèves</button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -296,8 +498,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
             document.querySelectorAll('.form-option').forEach(tab => {
                 tab.classList.remove('active');
                 tab.classList.remove('bg-danger', 'bg-success', 'bg-primary');
-                tab.classList.add('bg-light');
-                tab.classList.remove('text-white');
+                tab.classList.remove('bg-light');
+                tab.classList.remove('text-dark');
             });
             
             // Afficher le formulaire sélectionné
@@ -309,16 +511,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
             
             // Appliquer le style approprié à l'onglet actif
             if (formType === 'admin') {
-                activeTab.classList.add('bg-danger', 'text-white');
+                activeTab.classList.add('bg-danger', 'text-dark');
             } else if (formType === 'professor') {
-                activeTab.classList.add('bg-success', 'text-white');
+                activeTab.classList.add('bg-success', 'text-dark');
             } else {
-                activeTab.classList.add('bg-primary', 'text-white');
+                activeTab.classList.add('bg-primary', 'text-dark');
             }
             
             // Mettre à jour l'URL pour conserver le type de formulaire lors des rafraîchissements
             window.history.replaceState({}, '', 'register.php?type=' + formType);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gérer l'affichage des champs pour nouvelle classe
+            const classSelect = document.getElementById('single_student_class');
+            const newClassFields = document.getElementById('new_class_fields');
+            
+            if (classSelect && newClassFields) {
+                classSelect.addEventListener('change', function() {
+                    if (this.value === 'new') {
+                        newClassFields.style.display = 'block';
+                        document.getElementById('new_class_name').setAttribute('required', 'required');
+                        document.getElementById('new_class_year').setAttribute('required', 'required');
+                    } else {
+                        newClassFields.style.display = 'none';
+                        document.getElementById('new_class_name').removeAttribute('required');
+                        document.getElementById('new_class_year').removeAttribute('required');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
