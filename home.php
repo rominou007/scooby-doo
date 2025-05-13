@@ -2,6 +2,10 @@
 session_start();
 require('db.php');
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 // Récupérer tous les modules
 $stmt = $pdo->query("SELECT * FROM modules ORDER BY created_at DESC");
 $modules = $stmt->fetchAll();
