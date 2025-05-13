@@ -3,7 +3,7 @@
     require("db.php");
 
     // //  Vérification si l'utilisateur est connecté et est un admin
-    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 0) {
+    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 2) {
     //      // Rediriger vers la page de connexion ou une page d'erreur
     //      header("Location: index.php");
     // exit(); }
@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $class_id = $pdo->lastInsertId();
             }
             
-            // Insérer l'élève
+            // Insérer l'élève avec le rôle 0 (étudiant)
             $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
                     VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
             $stmt = $pdo->prepare($sql);
@@ -78,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'email' => $email,
                 'first_name' => $first_name,
                 'last_name' => $last_name,
-                'role' => 'student',
+                'role' => 0, // INT 0 pour étudiant
                 'phone_number' => $phone_number,
                 'address' => $address
             ]);
@@ -120,18 +120,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $confirm_password = $_POST["password_conf"];
         
         // Récupérer le rôle selon le type de formulaire
-        $role = 'student'; // Par défaut
+        $role = 0; // Par défaut: étudiant (0)
         
         if (isset($_POST["form_type"])) {
             switch ($_POST["form_type"]) {
                 case 'admin':
-                    $role = 'admin';
+                    $role = 2; // INT 2 pour admin
                     break;
                 case 'professor':
-                    $role = 'professor';
+                    $role = 1; // INT 1 pour professeur
                     break;
                 default:
-                    $role = 'student';
+                    $role = 0; // INT 0 pour étudiant
             }
         }
 
@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         try {
-            // Insérer les données dans la base de données
+            // Insérer les données dans la base de données avec le rôle INT
             $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
                     VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
             $stmt = $pdo->prepare($sql);
@@ -168,7 +168,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'email' => $email,
                 'first_name' => $first_name,
                 'last_name' => $last_name,
-                'role' => $role,
+                'role' => $role, // Utilisation du rôle INT
                 'phone_number' => $phone_number,
                 'address' => $address
             ]);

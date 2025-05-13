@@ -186,7 +186,7 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `first_name` varchar(50) DEFAULT NULL,
   `last_name` varchar(50) DEFAULT NULL,
-  `role` varchar(20) NOT NULL,
+  `role` INT NOT NULL, -- 0: student, 1: professor, 2: admin
   `phone_number` varchar(15) DEFAULT NULL,
   `address` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()

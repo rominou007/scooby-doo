@@ -3,7 +3,7 @@ session_start();
 require("db.php");
 
 // Vérifier si l'utilisateur est connecté et est un admin
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] != 'admin') {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] != 2) { // 2 pour admin
     // Rediriger vers la page de connexion ou une page d'erreur
     header("Location: index.php");
     exit();
@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                                 'email' => $email,
                                 'first_name' => $first_name,
                                 'last_name' => $last_name,
-                                'role' => 2, // Rôle étudiant (2) selon le fichier SQL
+                                'role' => 0, // 0 pour étudiant selon le fichier SQL
                                 'phone_number' => $phone_number,
                                 'address' => $address
                             ]);

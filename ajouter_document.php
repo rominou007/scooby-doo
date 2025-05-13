@@ -3,7 +3,7 @@ session_start();
 require("db.php");
 
 // Vérifie les autorisations
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'prof'])) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], [2, 1])) {
     die("Accès interdit.");
 }
 

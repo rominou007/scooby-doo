@@ -18,7 +18,8 @@ if (isset($_GET['module_id']) && !empty($_GET['module_id'])) {
 
 // Upload de document
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['document'])) {
-    if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'professor'])) {
+    // Vérification des rôles avec valeurs numériques (1=professeur, 2=admin)
+    if (isset($_SESSION['role']) && ($_SESSION['role'] === 1 || $_SESSION['role'] === 2)) {
         $fileName = basename($_FILES['document']['name']);
         $targetPath = "uploads/" . $fileName;
 
@@ -61,7 +62,10 @@ $documents = $stmt->fetchAll();
         <div class="alert alert-danger"><?= $uploadError ?></div>
     <?php endif; ?>
 
-    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'professor'])): ?>
+    <?php 
+    // Afficher le formulaire d'upload uniquement pour les professeurs (1) et admins (2)
+    if (isset($_SESSION['role']) && ($_SESSION['role'] === 1 || $_SESSION['role'] === 2)): 
+    ?>
         <form method="post" enctype="multipart/form-data" class="mb-4">
             <div class="mb-3">
                 <label for="document" class="form-label">Ajouter un document :</label>

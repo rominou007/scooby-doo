@@ -18,10 +18,10 @@
 
 
             if($user && password_verify($password, $user['password_hash'])){
-            
+                // Stocker les informations de l'utilisateur dans la session
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['role'] = $user['role']; // Maintenant c'est un INT (0, 1, 2)
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
 

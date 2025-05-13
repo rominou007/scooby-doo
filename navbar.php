@@ -13,9 +13,12 @@ if (session_status() == PHP_SESSION_NONE) {
 // }
 
 // Récupération des informations utilisateur depuis la session
-$user_id = $_SESSION['user_id'];
-$user_role = $_SESSION['role']; // 'student', 'professor', 'admin', 'staff'
-$user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
+$user_id = $_SESSION['user_id'] ?? null;
+$user_role = $_SESSION['role'] ?? null; // Maintenant c'est un INT: 0=étudiant, 1=professeur, 2=admin
+$user_name = isset($_SESSION['first_name']) ? $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] : 'Invité';
+
+// Définir le nombre de messages non lus (à implémenter avec une requête réelle)
+$unread_messages = 0; // Exemple: comptez les messages non lus
 ?>
 
 <!-- Barre de navigation principale -->
@@ -35,8 +38,8 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
         <div class="collapse navbar-collapse" id="navbarMain">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 
-                <?php if ($user_role == 'student'): ?>
-                <!-- Menu Étudiant -->
+                <?php if (isset($user_role) && $user_role === 0): ?>
+                <!-- Menu Étudiant (role = 0) -->
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
                         <i class="fas fa-tachometer-alt"></i> Tableau de bord
@@ -63,8 +66,8 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
                     </a>
                 </li>
                 
-                <?php elseif ($user_role == 'professor'): ?>
-                <!-- Menu Professeur -->
+                <?php elseif (isset($user_role) && $user_role === 1): ?>
+                <!-- Menu Professeur (role = 1) -->
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
                         <i class="fas fa-tachometer-alt"></i> Tableau de bord
@@ -91,8 +94,8 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
                     </a>
                 </li>
                 
-                <?php elseif ($user_role == 'admin'): ?>
-                <!-- Menu Admin -->
+                <?php elseif (isset($user_role) && $user_role === 2): ?>
+                <!-- Menu Admin (role = 2) -->
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
                         <i class="fas fa-tachometer-alt"></i> Tableau de bord
@@ -113,16 +116,14 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
                         <i class="fas fa-book"></i> Modules
                     </a>
                 </li>
-                 
-                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="settings.php">
                         <i class="fas fa-cogs"></i> Paramètres
                     </a>
                 </li>
                 
-                <?php elseif ($user_role == 'staff'): ?>
-                <!-- Menu Personnel -->
+                <?php elseif (isset($user_role) && $user_role === 3): ?>
+                <!-- Menu Personnel (si vous avez un rôle staff = 3) -->
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
                         <i class="fas fa-tachometer-alt"></i> Tableau de bord
@@ -142,6 +143,7 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
             </ul>
             
             <!-- Côté droit de la navbar - Pour tous les rôles -->
+            <?php if (isset($_SESSION['user_id'])): ?>
             <ul class="navbar-nav ms-auto">
                 <!-- Messagerie -->
                 <li class="nav-item dropdown position-relative">
@@ -166,6 +168,15 @@ $user_name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
                     </ul>
                 </li>
             </ul>
+            <?php else: ?>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">
+                        <i class="fas fa-sign-in-alt"></i> Connexion
+                    </a>
+                </li>
+            </ul>
+            <?php endif; ?>
         </div>
     </div>
 </nav>

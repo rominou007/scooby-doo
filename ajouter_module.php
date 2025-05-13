@@ -3,7 +3,7 @@ session_start();
 require("db.php");
 
 // Vérifier que l'utilisateur est connecté et a le droit d'ajouter un module
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'professor'])) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], [2, 1])) {
     header("Location: home.php");
     exit;
 }
