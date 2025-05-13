@@ -1,12 +1,16 @@
-/* Style général du corps */
-body {
-    background: url('uploads/Fond.png') no-repeat center center fixed; /* Ajout de l'image en fond */
-    background-size: cover; /* L'image couvre tout l'écran */
-    color: #FFFFFF; /* Texte blanc pour contraste */
-    font-family: 'Rubik', sans-serif;
+body{
+    font-family: Arial, sans-serif;
+    background: url('uploads/Fond.png') no-repeat center center fixed;
+    background-size: cover;
+}
+.badge-notification {
+    position: relative;
+    top: -10px;
+    left: -10px;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
 }
 
-/* Style de la barre de navigation */
 .navbar {
     background-color: rgba(15, 36, 158, 0.9) !important; /* Violet foncé avec opacité */
     border-bottom: 1px solid #F9D976; /* Bordure jaune pastel */
@@ -29,223 +33,31 @@ body {
 
 .navbar .btn-primary:hover {
     background-color: #D8B65A; /* Jaune plus foncé */
-    border-color: #D8B65A;
+    border-color: #D8B65A;
 }
 
-/* Style des tableaux */
-.table th {
-    background-color: rgba(255, 255, 255, 0.8); /* Blanc avec opacité */
-    color: #340b75; /* Texte violet foncé */
+@media (max-width: 992px) {
+    .navbar-nav .dropdown-menu {
+        position: static;
+        float: none;
+    }
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(245, 245, 245, 0.8); /* Gris clair avec opacité */
-}
-
-.table-striped tbody tr:nth-of-type(even) {
-    background-color: rgba(255, 255, 255, 0.8); /* Blanc avec opacité */
-}
-
-/* Effet de survol pour les tableaux */
-.table-hover tbody tr:hover {
-    background-color: rgba(249, 217, 118, 0.8); /* Jaune pastel avec opacité */
-}
-
-/* Style des boutons */
-.btn-primary {
-    background-color: #F9D976; /* Jaune pastel */
-    border-color: #F9D976;
-    color: #370c7b; /* Texte violet foncé */
-}
-
-.btn-primary:hover {
-    background-color: #D8B65A; /* Jaune plus foncé */
-    border-color: #D8B65A;
-}
-
-.btn-danger {
-    background-color: #A3C4F3; /* Bleu clair */
-    border-color: #A3C4F3;
-    color: #0a2f7e; /* Texte violet foncé */
-}
-
-.btn-danger:hover {
-    background-color: #7FA9E0; /* Bleu plus foncé */
-    border-color: #7FA9E0;
-}
-
-/* Style des badges */
-.badge {
-    background-color: #F9D976; /* Jaune pastel */
-    color: #0505b0; /* Texte violet foncé */
-}
-
-.badge.text-bg-danger {
-    background-color: #A3C4F3; /* Bleu clair */
-}
-
-.badge.text-bg-primary {
-    background-color: #F9D976; /* Jaune pastel */
-}
-.bg-secondary {
-    background-color: rgba(235, 235, 245, 0.9) !important; /* Gris pastel clair avec opacité */    
-}
-/* Fond pour les messages de l'expéditeur */
-.bg-primary {
-    background-color: #4A2C7A !important; /* Violet foncé */
-    color: white;
-}
-
-/* Style des cartes */
-.card-header {
-    background-color: rgba(74, 44, 122, 0.9); /* Violet foncé avec opacité */
-    color: #FFFFFF; /* Texte blanc */
+.form-option {
+    cursor: pointer;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
     font-weight: bold;
-}
-
-.card-footer {
-    background-color: rgba(245, 245, 245, 0.8); /* Gris clair avec opacité */
-}
-
-.card .btn-info {
-    z-index: 1; /* Assure que le bouton est au-dessus de la carte */
-    font-size: 0.8rem; /* Taille réduite pour un bouton discret */
-    background-color: #A3C4F3; /* Bleu clair */
-    color: #1f07aa; /* Texte violet foncé */
-}
-
-.card .btn-info:hover {
-    background-color: #7FA9E0; /* Bleu plus foncé */
-    color: white;
-}
-
-/* Style des formulaires */
-.form-label {
-    color: black; /* Jaune pastel */
-    font-weight: bold;
-}
-.form-control {
-    border-color: #F9D976; /* Bordure jaune pastel */
-}
-
-.form-control:focus {
-    border-color: #A3C4F3; /* Bleu clair */
-    box-shadow: 0 0 5px rgba(163, 196, 243, 0.5); /* Lueur bleu clair */
-}
-
-/* Bordure pour les éléments select */
-.form-select {
-    border-color: #F9D976; /* Bordure jaune pastel */
-}
-
-.form-select:focus {
-    border-color: #A3C4F3; /* Bleu clair */
-    box-shadow: 0 0 5px rgba(163, 196, 243, 0.5); /* Lueur bleu clair */
-}
-
-/* Style des modales */
-.modal-header {
-    background-color: rgba(74, 44, 122, 0.9); /* Violet foncé avec opacité */
-    color: #FFFFFF; /* Texte blanc */
-}
-
-.modal-footer {
-    background-color: rgba(245, 245, 245, 0.8); /* Gris clair avec opacité */
-}
-
-/* Liens */
-a {
-    color: #F9D976; /* Jaune pastel */
-    text-decoration: none;
-}
-
-a:hover {
-    color: #A3C4F3; /* Bleu clair */
-    text-decoration: underline;
-}
-
-/* Style des boutons flottants */
-.btn-floating {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #4A2C7A; /* violet foncé */
-    color: #F9D976; /* Texte Jaune pastel  */
-    border-radius: 50%; /* Rond par défaut */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    text-decoration: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
-    overflow: hidden;
-    z-index: 1000;
-}
-
-.btn-floating:hover {
-    width: 180px; /* Étend le bouton pour former un rectangle */
-    height: 60px; /* Garde la hauteur constante */
-    border-radius: 30px; /* Coins arrondis pour un rectangle avec des arcs */
-    background-color: #4A2C7A; /* Jaune plus foncé */
-}
-
-.btn-floating-text {
-    color: #F9D976;
-    display: none;
-    margin-left: 10px;
-    font-size: 16px;
-    white-space: nowrap;
-}
-
-.btn-floating:hover .btn-floating-text {
-    display: inline-block; /* Affiche le texte au survol */
-}
-
-/* Style des filtres dans annonces.php */
-.filter-badge {
-    position: relative;
-}
-
-.filter-badge[data-count]:after {
-    content: attr(data-count);
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    font-size: 0.75em;
-    background: #F9D976;
-    color: #260b9e;
-    width: 18px;
-    height: 18px;
     text-align: center;
-    line-height: 18px;
-    border-radius: 50%;
-    font-weight: bold;
+}
+.form-option.active {
+    border-bottom: 3px solid #007bff;
+}
+.form-container {
+    display: none;
+}
+.form-container.active {
+    display: block;
 }
 
-/* Bouton de filtres plus visible */
-.btn-filter {
-    background-color: #F9D976; /* Jaune pastel comme couleur principale */
-    border-color: #F9D976;
-    color: #230b99; /* Texte violet foncé */
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Ajoute une ombre */
-    transition: all 0.3s ease;
-}
-
-.btn-filter:hover, .btn-filter.active {
-    background-color: #0e1fa5; /* Violet foncé au survol et quand actif */
-    border-color: #3710ae;
-    color: #F9D976; /* Texte jaune pastel */
-    transform: translateY(-2px); /* Légère animation au survol */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Ombre plus prononcée */
-}
-
-/* Style pour les alertes */
-.alert-info {
-    background-color: rgba(74, 44, 122, 0.8); /* Violet foncé avec opacité */
-    color: white;
-    border-color: #4A2C7A;
-}

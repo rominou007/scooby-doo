@@ -3,7 +3,7 @@
     require("db.php");
 
     // //  Vérification si l'utilisateur est connecté et est un admin
-    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 2) {
+    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 2 ) {
     //      // Rediriger vers la page de connexion ou une page d'erreur
     //      header("Location: index.php");
     // exit(); }
