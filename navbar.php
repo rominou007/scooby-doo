@@ -21,12 +21,12 @@ $user_name = isset($_SESSION['first_name']) ? $_SESSION['first_name'] . ' ' . $_
 $unread_messages = 0; // Exemple: comptez les messages non lus
 ?>
 
-<!-- Barre de navigation principale -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<!-- Barre de navigation principale  -->
+<nav class="navbar navbar-sm navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <!-- Logo et nom du LMS -->
         <a class="navbar-brand" href="index.php">
-            <img src="assets/logo.png" alt="Logo LMS" class="navbar-logo">  Plateforme LMS
+            <img src="uploads/student_five_logo.png" alt="Logo LMS" class="navbar-logo" width="75" height="75">  Plateforme LMS
         </a>
         
         <!-- Bouton hamburger pour mobile -->
@@ -36,33 +36,33 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
         
         <!-- Contenu de la navbar qui sera collapsé sur mobile -->
         <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-0">
                 
                 <?php if (isset($user_role) && $user_role === 0): ?>
                 <!-- Menu Étudiant (role = 0) -->
                 <li class="nav-item">
-                    <a class="nav-link" href="dashboard.php">
+                    <a class="nav-link py-1" href="dashboard.php">
                         <i class="fas fa-tachometer-alt"></i> Tableau de bord
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="courses.php">
+                    <a class="nav-link py-1" href="courses.php">
                         <i class="fas fa-book"></i> Mes cours
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="QUIZZ.php">
-                        <i class="fas fa-tasks"></i> QUIZZES
+                    <a class="nav-link py-1" href="QUIZ.php">
+                        <i class="fas fa-tasks"></i> Quiz
                     </a>
-                </li>
+                    </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="grades.php">
+                    <a class="nav-link py-1" href="grades.php">
                         <i class="fas fa-graduation-cap"></i> Notes
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="planing.php">
-                        <i class="fas fa-calendar-alt"></i> planing
+                    <a class="nav-link py-1" href="planning.php">
+                        <i class="fas fa-calendar-alt"></i> Planning
                     </a>
                 </li>
                 
@@ -84,12 +84,12 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="grades.php">
-                        <i class="fas fa-star"></i> ajouter && voir les notes
+                    <a class="nav-link py-1" href="grades.php">
+                        <i class="fas fa-star"></i> Notes
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="classes.php">
+                    <a class="nav-link py-1" href="classes.php">
                         <i class="fas fa-users"></i> Classes
                     </a>
                 </li>
@@ -102,22 +102,22 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="users.php">
+                    <a class="nav-link py-1" href="users.php">
                         <i class="fas fa-users-cog"></i> Utilisateurs
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="classes.php">
+                    <a class="nav-link py-1" href="classes.php">
                         <i class="fas fa-user-graduate"></i> Classes
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="modules.php">
+                    <a class="nav-link py-1" href="modules.php">
                         <i class="fas fa-book"></i> Modules
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="settings.php">
+                    <a class="nav-link py-1" href="settings.php">
                         <i class="fas fa-cogs"></i> Paramètres
                     </a>
                 </li>
@@ -125,8 +125,8 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                 <?php elseif (isset($user_role) && $user_role === 3): ?>
                 <!-- Menu Personnel (si vous avez un rôle staff = 3) -->
                 <li class="nav-item">
-                    <a class="nav-link" href="dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    <a class="nav-link py-1" href="dashboard.php">
+                        <i class="fas fa-tachometer-alt"></i> Tableau
                     </a>
                 </li>
                 <li class="nav-item">
@@ -135,8 +135,8 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="documents.php">
-                        <i class="fas fa-file-alt"></i> Documents
+                    <a class="nav-link py-1" href="documents.php">
+                        <i class="fas fa-file-alt"></i> Docs
                     </a>
                 </li>
                 <?php endif; ?>
@@ -146,8 +146,8 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
             <?php if (isset($_SESSION['user_id'])): ?>
             <ul class="navbar-nav ms-auto">
                 <!-- Messagerie -->
-                <li class="nav-item dropdown position-relative">
-                    <a class="nav-link" href="messages.php" id="messagesDropdown">
+                <li class="nav-item position-relative">
+                    <a class="nav-link py-1" href="messages.php" id="messagesDropdown">
                         <i class="fas fa-envelope"></i>
                         <?php if ($unread_messages > 0): ?>
                             <span class="badge rounded-pill bg-danger badge-notification"><?php echo $unread_messages; ?></span>
@@ -157,7 +157,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
             
                 <!-- Menu utilisateur -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle py-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($user_name); ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -171,7 +171,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
             <?php else: ?>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="index.php">
+                    <a class="nav-link py-1" href="index.php">
                         <i class="fas fa-sign-in-alt"></i> Connexion
                     </a>
                 </li>
