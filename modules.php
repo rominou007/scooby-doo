@@ -21,7 +21,7 @@ $modules = $stmt->fetchAll();
     <h1 class="mb-4">Liste des modules</h1>
 
     <!-- Ajouter un module si admin ou professeur -->
-    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [2, 1])): ?>
+    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'professor'])): ?>
         <a href="ajouter_module.php" class="btn btn-success mb-3">Ajouter un module</a>
     <?php endif; ?>
 
