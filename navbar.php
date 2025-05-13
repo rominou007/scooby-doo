@@ -147,7 +147,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
             <ul class="navbar-nav ms-auto">
                 <!-- Messagerie -->
                 <li class="nav-item position-relative">
-                    <a class="nav-link py-1" href="messages.php" id="messagesDropdown">
+                    <a class="nav-link py-1" href="forum.php" id="messagesDropdown">
                         <i class="fas fa-envelope"></i>
                         <?php if ($unread_messages > 0): ?>
                             <span class="badge rounded-pill bg-danger badge-notification"><?php echo $unread_messages; ?></span>

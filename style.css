@@ -2,6 +2,7 @@ body{
     font-family: Arial, sans-serif;
     background: url('uploads/Fond.png') no-repeat center center fixed;
     background-size: cover;
+    color: #FFFFFF; /* Texte blanc */
 }
 .badge-notification {
     position: relative;
@@ -13,7 +14,6 @@ body{
 
 .navbar {
     background-color: rgba(15, 36, 158, 0.9) !important; /* Violet foncé avec opacité */
-    border-bottom: 1px solid #F9D976; /* Bordure jaune pastel */
 }
 
 .navbar .navbar-brand {
