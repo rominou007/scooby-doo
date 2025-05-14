@@ -45,30 +45,37 @@
 <?php include("navbar.php"); ?>
 <body class="bg-secondary">
 
-    <div class="container">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <form action="" class="p-4 rounded shadow bg-light" method="post">
-                    
-                    <h1 class="text-center text-danger mb-4">Connexion</h1>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Adresse email</label>
-                        <input required type="email" class="form-control" id="email" name="email" placeholder="exemple@email.com">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Mot de passe</label>
-                        <input required type="password" class="form-control" id="password" name="password">
-                    </div>
+<div class="container-fluid login-container">
+    <div class="row h-100">
+        <!-- Partie gauche avec image -->
+        <div class="col-md-6 login-image d-none d-md-block"></div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <button type="submit" class="btn btn-primary">Se connecter</button>
-                        <a href="register.php" class="btn btn-outline-primary">S'inscrire</a>
-                    </div>
-                </form>
-            </div>
+        <!-- Partie droite avec formulaire -->
+        <div class="col-md-6 login-form">
+            <!-- Logo au-dessus du formulaire -->
+            <img src="uploads/logo_nwar.jpg" alt="Logo" class="logo">
+            
+            <!-- Formulaire -->
+            <form method="POST" action="">
+                <h2 class="text-center mb-4">Connexion</h2>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Adresse email</label>
+                    <input required type="email" class="form-control" id="email" name="email" placeholder="exemple@email.com">
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input required type="password" class="form-control" id="password" name="password">
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Se connecter</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+
 </body>
 </html>

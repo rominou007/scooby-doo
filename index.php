@@ -21,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Stocker les informations de l'utilisateur dans la session
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['role'] = $user['role']; // Maintenant c'est un INT (0, 1, 2)
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
 
@@ -49,13 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="row justify-content-center mt-4">
             <div class="col-md-4">
-                <a href="login.php?role=admin" class="btn btn-danger btn-lg w-100">Se connecter en tant qu'Admin</a>
-            </div>
-            <div class="col-md-4">
-                <a href="login.php?role=prof" class="btn btn-warning btn-lg w-100">Se connecter en tant que Professeur</a>
-            </div>
-            <div class="col-md-4">
-                <a href="login.php?role=etudiant" class="btn btn-primary btn-lg w-100">Se connecter en tant qu'Étudiant</a>
+                <a href="login.php" class="btn btn-danger btn-lg w-100">Se connecter</a>
             </div>
         </div>
     </div>
