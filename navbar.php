@@ -46,7 +46,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-1" href="courses.php">
+                    <a class="nav-link py-1" href="modules.php">
                         <i class="fas fa-book"></i> Mes cours
                     </a>
                 </li>
