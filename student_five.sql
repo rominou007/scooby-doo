@@ -199,6 +199,40 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `username`, `password_hash`, `email`, `first_name`, `last_name`, `role`, `phone_number`, `address`, `created_at`) VALUES
 (1, 'AdminAntoine', '$2y$10$rWLVJR.WcIs3ZYk/wP8Jouo2RbJMavxTFB.ATjrSdka5LMm/xss42', 'adminantoine@gmail.com', 'Antoine', 'Gobron', 'admin', '0606060606', 'non', '2025-05-13 07:08:50');
 
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `forum_articles`
+--
+
+CREATE TABLE `forum_articles` (
+  `article_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `titre` varchar(255) NOT NULL,
+  `contenu` text NOT NULL,
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`article_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `forum_articles_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Structure de la table `forum_commentaires`
+--
+
+CREATE TABLE `forum_commentaires` (
+  `commentaire_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `article_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `contenu` text NOT NULL,
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`commentaire_id`),
+  KEY `article_id` (`article_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `forum_commentaires_article_fk` FOREIGN KEY (`article_id`) REFERENCES `forum_articles` (`article_id`) ON DELETE CASCADE,
+  CONSTRAINT `forum_commentaires_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Index pour les tables déchargées
 --
