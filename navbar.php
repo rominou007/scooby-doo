@@ -25,7 +25,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
 <nav class="navbar navbar-sm navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <!-- Logo et nom du LMS -->
-        <a class="navbar-brand" href="index.php">
+        <a class="navbar-brand" href="home.php">
             <img src="uploads/student_five_logo.png" alt="Logo LMS" class="navbar-logo" width="75" height="75">  Plateforme LMS
         </a>
         
@@ -171,7 +171,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
             <?php else: ?>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link py-1" href="index.php">
+                    <a class="nav-link py-1" href="home.php">
                         <i class="fas fa-sign-in-alt"></i> Connexion
                     </a>
                 </li>
