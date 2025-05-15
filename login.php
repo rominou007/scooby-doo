@@ -57,7 +57,7 @@
             
             <!-- Formulaire -->
             <form method="POST" action="">
-                <h2 class="text-center mb-4">Connexion</h2>
+                <h2 class="text-center mb-4 text-dark">Connexion</h2>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Adresse email</label>
