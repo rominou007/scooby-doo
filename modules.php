@@ -18,7 +18,7 @@ $modules = $stmt->fetchAll();
 <?php include("navbar.php"); ?>
 
 <div class="container mt-5">
-    <h1 class="mb-4">Liste des modules</h1>
+    <h1 class="mb-4 text-white">Liste des modules</h1>
 
     <!-- Ajouter un module si admin ou professeur -->
     <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'professor'])): ?>

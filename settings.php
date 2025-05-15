@@ -56,6 +56,14 @@ if ($user['role'] === 'admin') {
 if (in_array($user['role'], ['admin', 'professor'])) {
     $modules = $pdo->query("SELECT * FROM modules")->fetchAll();
 }
+function getRoleName($role) {
+    switch ($role) {
+        case 0: return 'Étudiant';
+        case 1: return 'Professeur';
+        case 2: return 'Administrateur';
+        default: return 'Inconnu';
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -69,12 +77,12 @@ if (in_array($user['role'], ['admin', 'professor'])) {
 <?php include("navbar.php"); ?>
 
 <div class="container mt-5">
-    <h1>Paramètres</h1>
+    <h1 class="text-white">Paramètres</h1>
 
     <!-- Message de bienvenue -->
     <div class="alert alert-info">
         <h4>Bienvenue, <?= htmlspecialchars($user['username']) ?> !</h4>
-        <p>Connecté en tant que <?= htmlspecialchars($user['role']) ?>.</p>
+        <p>Connecté en tant que <?= getRoleName($user['role']) ?>.</p>
     </div>
 
     <!-- Infos compte + actions personnelles -->

@@ -2,7 +2,6 @@ body{
     font-family: Arial, sans-serif;
     background: url('uploads/Fond.png') no-repeat center center fixed;
     background-size: cover;
-    color: #FFFFFF; /* Texte blanc */
 }
 .badge-notification {
     position: relative;
