@@ -3,7 +3,7 @@
     require("db.php");
 
     // //  Vérification si l'utilisateur est connecté et est un admin
-    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 2) {
+    //  if (!isset($_SESSION["id"]) || $_SESSION["access"] != 2 ) {
     //      // Rediriger vers la page de connexion ou une page d'erreur
     //      header("Location: index.php");
     // exit(); }
@@ -172,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'phone_number' => $phone_number,
                 'address' => $address
             ]);
-            header("location: index.php");
+            header("location: login.php");
         } catch (PDOException $e) {
             die("Erreur lors de l'enregistrement : " . $e->getMessage());
         }

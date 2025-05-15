@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != 1) {
-    header("location: index.php");
+    header("location: login.php");
     exit();
 }
 

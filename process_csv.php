@@ -5,7 +5,7 @@ require("db.php");
 // Vérifier si l'utilisateur est connecté et est un admin
 if (!isset($_SESSION["user_id"]) || $_SESSION["role"] != 2) { // 2 pour admin
     // Rediriger vers la page de connexion ou une page d'erreur
-    header("Location: index.php");
+    header("Location: login.php");
     exit();
 }
 
