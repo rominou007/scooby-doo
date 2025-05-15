@@ -51,12 +51,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-1" href="QUIZ.php">
-                        <i class="fas fa-tasks"></i> Quiz
-                    </a>
-                    </li>
-                <li class="nav-item">
-                    <a class="nav-link py-1" href="grades.php">
+                    <a class="nav-link py-1" href="notes.php">
                         <i class="fas fa-graduation-cap"></i> Notes
                     </a>
                 </li>
@@ -84,7 +79,7 @@ $unread_messages = 0; // Exemple: comptez les messages non lus
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-1" href="grades.php">
+                    <a class="nav-link py-1" href="notes.php">
                         <i class="fas fa-star"></i> Notes
                     </a>
                 </li>

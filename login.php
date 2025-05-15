@@ -48,10 +48,10 @@
 <div class="container-fluid login-container">
     <div class="row h-100">
         <!-- Partie gauche avec image -->
-        <div class="col-md-6 login-image d-none d-md-block"></div>
+        <div class="col-md-7 login-image d-none d-md-block"></div>
 
         <!-- Partie droite avec formulaire -->
-        <div class="col-md-6 login-form">
+        <div class="col-md-5 login-form">
             <!-- Logo au-dessus du formulaire -->
             <img src="uploads/logo_nwar.jpg" alt="Logo" class="logo">
             
@@ -59,7 +59,7 @@
             <form method="POST" action="">
                 <h2 class="text-center mb-4 text-dark">Connexion</h2>
 
-                <div class="mb-3">
+                <div class="">
                     <label for="email" class="form-label">Adresse email</label>
                     <input required type="email" class="form-control" id="email" name="email" placeholder="exemple@email.com">
                 </div>

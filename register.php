@@ -172,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'phone_number' => $phone_number,
                 'address' => $address
             ]);
-            header("location: index.php");
+            header("location: login.php");
         } catch (PDOException $e) {
             die("Erreur lors de l'enregistrement : " . $e->getMessage());
         }

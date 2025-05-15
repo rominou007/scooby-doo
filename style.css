@@ -89,43 +89,37 @@ body{
     display: block;
 }
 
-    body, html {
-        height: 100%;
-        margin: 0;
-    }
-
-    .login-container {
-        height: 100vh;
-    }
-
-    .login-image {
-        background: url('uploads/Fond.png') no-repeat center center;
-        background-size: cover;
-
-    }
-
+body, html {
+    height: 100%;
+    margin: 0;
+}
+.login-container {
+    height: 100vh;
+}
+.login-image {
+    background: url('uploads/Fond.png') no-repeat center center;
+    background-size: cover;
+}
     /* Centrer le logo au-dessus du formulaire */
-    .login-form {
-        display: flex;
-        flex-direction: column; /* Aligne les éléments verticalement */
-        align-items: center; /* Centre horizontalement */
-        /* justify-content: center; Centre verticalement */
-        height: 100%; /* Prend toute la hauteur */
-        background-color: #ffffff;
-        padding: 2rem;
-    }
-
-    .login-form form {
-        width: 100%;
-        max-width: 400px;
-    }
-
-    .logo {
-        width: 350px; /* Largeur du logo */
-        height: auto; /* Maintient les proportions */
-        margin-bottom: 10px; /* Ajoute un espacement sous le logo */
-        display: block; /* Pour centrer le logo */
-        margin-left: auto; /* Pour centrer le logo */
-        margin-right: auto; /* Pour centrer le logo */
-        margin-top: px;
-    }
+.login-form {
+    display: flex;
+    flex-direction: column; /* Aligne les éléments verticalement */
+    align-items: center; /* Centre horizontalement */
+    /* justify-content: center; Centre verticalement */
+    height: 100%; /* Prend toute la hauteur */
+    background-color: #ffffff;
+    padding: 2rem;
+}
+.login-form form {
+    width: 100%;
+    max-width: 400px;
+}
+.logo {
+    width: 350px; /* Largeur du logo */
+    height: auto; /* Maintient les proportions */
+    margin-bottom: 10px; /* Ajoute un espacement sous le logo */
+    display: block; /* Pour centrer le logo */
+    margin-left: auto; /* Pour centrer le logo */
+    margin-right: auto; /* Pour centrer le logo */
+    margin-top: px;
+}
