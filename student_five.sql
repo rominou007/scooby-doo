@@ -113,4 +113,10 @@ CREATE TABLE `notes` (
   FOREIGN KEY (`id_module`) REFERENCES `modules` (`id_module`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table users
+--
+
+INSERT INTO users (user_id, username, password_hash, email, first_name, last_name, role, phone_number, address, created_at) VALUES
+(1, 'AdminAntoine', '$2y$10$rWLVJR.WcIs3ZYk/wP8Jouo2RbJMavxTFB.ATjrSdka5LMm/xss42', 'adminantoine@gmail.com', 'Antoine', 'Gobron', 0, '0606060606', 'non', '2025-05-13 07:08:50');
 COMMIT;
