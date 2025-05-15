@@ -14,7 +14,6 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Traitement pour un élève unique
     if (isset($_POST["form_type"]) && $_POST["form_type"] === "student" && !isset($_FILES["csv_file"])) {
-        $username = trim($_POST["username"]);
         $first_name = trim($_POST["first_name"]);
         $last_name = trim($_POST["last_name"]);
         $email = trim($_POST["email"]);
@@ -37,9 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
         // Vérifier si l'utilisateur existe déjà
-        $sql = "SELECT * FROM users WHERE email = :email OR username = :username";
+        $sql = "SELECT * FROM user WHERE email = :email";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['email' => $email, 'username' => $username]);
+        $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
 
         if ($user) {
@@ -56,12 +55,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $new_class_year = isset($_POST['new_class_year']) ? intval($_POST['new_class_year']) : date('Y');
                 $new_class_desc = trim($_POST['new_class_desc'] ?? '');
                 
-                $createClassSql = "INSERT INTO classes (class_name, enrollment_year, description) 
-                                  VALUES (:class_name, :enrollment_year, :description)";
+                $createClassSql = "INSERT INTO classes (class_name, année_scolaire, description) 
+                                  VALUES (:class_name, :année_scolaire, :description)";
                 $createClassStmt = $pdo->prepare($createClassSql);
                 $createClassStmt->execute([
                     'class_name' => $new_class_name,
-                    'enrollment_year' => $new_class_year,
+                    'année_scolaire' => $new_class_year,
                     'description' => $new_class_desc
                 ]);
                 
@@ -69,11 +68,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             // Insérer l'élève avec le rôle 0 (étudiant)
-            $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
-                    VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+            $sql = "INSERT INTO user (mdp, email, prenom, nom, role, telephone, adresse) 
+                    VALUES (:password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                'username' => $username,
                 'password_hash' => $password_hash,
                 'email' => $email,
                 'first_name' => $first_name,
@@ -110,7 +108,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // Traitement pour les autres types d'utilisateurs (code existant)
     elseif ($_SERVER["REQUEST_METHOD"] == "POST" && $form_type != 'student') {
-        $username = trim($_POST["username"]);
         $first_name = trim($_POST["first_name"]);
         $last_name = trim($_POST["last_name"]);
         $email = trim($_POST["email"]);
@@ -148,9 +145,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
         // Vérifier si l'utilisateur existe déjà
-        $sql = "SELECT * FROM users WHERE email = :email OR username = :username";
+        $sql = "SELECT * FROM user WHERE email = :email";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['email' => $email, 'username' => $username]);
+        $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
 
         if($user){
@@ -159,16 +156,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         try {
             // Insérer les données dans la base de données avec le rôle INT
-            $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
-                    VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+            $sql = "INSERT INTO user (mdp, email, prenom, nom, role, telephone, adresse) 
+                    VALUES (:password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                'username' => $username,
                 'password_hash' => $password_hash,
                 'email' => $email,
                 'first_name' => $first_name,
                 'last_name' => $last_name,
-                'role' => $role, // Utilisation du rôle INT
+                'role' => $role,
                 'phone_number' => $phone_number,
                 'address' => $address
             ]);
@@ -229,12 +225,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <h3 class="text-center text-danger mb-3">Créer un administrateur</h3>
                     <input type="hidden" name="form_type" value="admin">
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="admin_username" class="form-label">Nom d'utilisateur</label>
-                            <input required type="text" class="form-control" id="admin_username" name="username">
-                        </div>
-                        
+                    <div class="row"> 
                         <div class="col-md-6 mb-3">
                             <label for="admin_email" class="form-label">Email</label>
                             <input required type="email" class="form-control" id="admin_email" name="email">
@@ -286,11 +277,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="hidden" name="form_type" value="professor">
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="prof_username" class="form-label">Nom d'utilisateur</label>
-                            <input required type="text" class="form-control" id="prof_username" name="username">
-                        </div>
-                        
                         <div class="col-md-6 mb-3">
                             <label for="prof_email" class="form-label">Email</label>
                             <input required type="email" class="form-control" id="prof_email" name="email">
@@ -361,8 +347,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </div>
 
                             <div class="mb-3">
-                                <label for="enrollment_year" class="form-label">Année d'entrée</label>
-                                <input required type="number" class="form-control" id="enrollment_year" name="enrollment_year" placeholder="Ex: 2023" min="2000" max="2100" value="<?php echo date('Y'); ?>">
+                                <label for="enrollment_year" class="form-label">Année scolaire</label>
+                                <input required type="text" class="form-control" id="enrollment_year" name="enrollment_year" placeholder="Ex: 24/25 ou 2024/2025" ">
                             </div>
 
                             <div class="mb-3">
@@ -376,8 +362,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <div class="form-text text-muted mt-2">
                                     <p>Format attendu du CSV :</p>
                                     <ul>
-                                        <li><strong>Colonnes</strong>: username,first_name,last_name,email,phone_number,address,password</li>
-                                        <li><strong>Exemple</strong>: jdupont,Jean,Dupont,jean.dupont@email.com,0123456789,"123 Rue Example, 75000 Paris",motdepasse123</li>
+                                        <li><strong>Colonnes</strong>: first_name,last_name,email,phone_number,address,password</li>
+                                        <li><strong>Exemple</strong>: Jean,Dupont,jean.dupont@email.com,0123456789,"123 Rue Example, 75000 Paris",motdepasse123</li>
                                     </ul>
                                     <p>La classe sera automatiquement ajoutée comme information supplémentaire.</p>
                                 </div>
@@ -394,11 +380,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="hidden" name="form_type" value="student">
                             
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="student_username" class="form-label">Nom d'utilisateur</label>
-                                    <input required type="text" class="form-control" id="student_username" name="username">
-                                </div>
-                                
+
                                 <div class="col-md-6 mb-3">
                                     <label for="student_email" class="form-label">Email</label>
                                     <input required type="email" class="form-control" id="student_email" name="email">
