@@ -3,7 +3,7 @@ session_start();
 require('db.php');
 
 // Récupérer tous les modules
-$stmt = $pdo->query("SELECT * FROM modules ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT * FROM modules ORDER BY date_creation DESC");
 $modules = $stmt->fetchAll();
 ?>
 
@@ -33,9 +33,9 @@ $modules = $stmt->fetchAll();
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars($module['module_name']) ?></h5>
+                            <h5 class="card-title"><?= htmlspecialchars($module['nom_module']) ?></h5>
                             <p class="card-text"><?= htmlspecialchars($module['description']) ?></p>
-                            <a href="cours.php?module_id=<?= $module['module_id'] ?>" class="btn btn-primary">Voir le module</a>
+                            <a href="cours.php?module_id=<?= $module['id_module'] ?>" class="btn btn-primary">Voir le module</a>
                         </div>
                     </div>
                 </div>

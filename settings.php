@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Récupération de l'utilisateur
 $user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = :user_id");
+$stmt = $pdo->prepare("SELECT * FROM user WHERE id_user = :user_id");
 $stmt->execute(['user_id' => $user_id]);
 $user = $stmt->fetch();
 
@@ -19,7 +19,7 @@ if (!$user) die("Utilisateur introuvable.");
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     if ($_POST['new_password'] === $_POST['confirm_password']) {
         $hashed = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
-        $pdo->prepare("UPDATE users SET password = :password WHERE user_id = :user_id")
+        $pdo->prepare("UPDATE user SET mdp = :password WHERE id_user = :user_id")
             ->execute(['password' => $hashed, 'user_id' => $user_id]);
         $password_success = "Mot de passe mis à jour.";
     } else {
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 
 // Suppression de son propre compte
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_own_account'])) {
-    $pdo->prepare("DELETE FROM users WHERE user_id = :user_id")
+    $pdo->prepare("DELETE FROM user WHERE id_user = :user_id")
         ->execute(['user_id' => $user_id]);
     session_destroy();
     header("Location: login.php");

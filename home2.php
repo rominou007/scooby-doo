@@ -93,19 +93,6 @@ try {
         $exercises_stmt->execute([$user_id]);
         $recent_exercises = $exercises_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Récupérer les notes récentes attribuées par le professeur
-        $grades_query = "
-            SELECT g.grade_id, g.grade, g.graded_at, s.first_name, s.last_name, m.module_name
-            FROM grades g
-            JOIN modules m ON g.module_id = m.module_id
-            JOIN users s ON g.student_id = s.user_id
-            WHERE g.professor_id = ?
-            ORDER BY g.graded_at DESC
-            LIMIT 5
-        ";
-        $grades_stmt = $pdo->prepare($grades_query);
-        $grades_stmt->execute([$user_id]);
-        $recent_grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (PDOException $e) {
     error_log("Erreur de base de données : " . $e->getMessage());

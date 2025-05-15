@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Récupérer les informations de l'utilisateur connecté
 $user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = :user_id");
+$stmt = $pdo->prepare("SELECT * FROM user WHERE id_user = :user_id");
 $stmt->execute(['user_id' => $user_id]);
 $user = $stmt->fetch();
 
@@ -38,7 +38,7 @@ if (!$user) {
         </tr>
         <tr>
             <th>Nom</th>
-            <td><?= htmlspecialchars($user['username']) ?></td>
+            <td><?= htmlspecialchars($user['nom_user']) ?></td>
         </tr>
         <tr>
             <th>Email</th>

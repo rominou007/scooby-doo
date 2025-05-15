@@ -5,7 +5,7 @@ require('db.php');
 if (isset($_GET['module_id']) && !empty($_GET['module_id'])) {
     $module_id = $_GET['module_id'];
 
-    $stmt = $pdo->prepare("SELECT * FROM modules WHERE module_id = :module_id");
+    $stmt = $pdo->prepare("SELECT * FROM modules WHERE id_module = :module_id");
     $stmt->execute(['module_id' => $module_id]);
     $module = $stmt->fetch();
 
@@ -28,8 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['document'])) {
         $targetPath = "uploads/" . $fileName;
 
         if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
-            $stmt = $pdo->prepare("INSERT INTO documents (document_type, file_path) VALUES (:type, :path)");
+            $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier) VALUES (:user_id, :type, :path)");
             $stmt->execute([
+                'user_id' => $_SESSION['user_id'], // ID de l'utilisateur qui téléverse
                 'type' => 'module_doc_' . $module_id,
                 'path' => $targetPath
             ]);

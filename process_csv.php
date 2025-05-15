@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                         
                         try {
                             // Vérifier si l'utilisateur existe déjà
-                            $checkSql = "SELECT * FROM users WHERE email = :email OR username = :username";
+                            $checkSql = "SELECT * FROM user WHERE email = :email OR nom_user = :username";
                             $checkStmt = $pdo->prepare($checkSql);
                             $checkStmt->execute(['email' => $email, 'username' => $username]);
                             $user = $checkStmt->fetch();
@@ -89,9 +89,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                             // Hacher le mot de passe
                             $password_hash = password_hash($password, PASSWORD_DEFAULT);
                             
-                            // Insérer l'élève dans la table users
-                            $insertSql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
-                                          VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+                            // Insérer l'élève dans la table user
+                            $insertSql = "INSERT INTO user (nom_user, mdp, email, prenom, nom, role, telephone, adresse, sexe) 
+                                          VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address, :sexe)";
                             $insertStmt = $pdo->prepare($insertSql);
                             $insertStmt->execute([
                                 'username' => $username,
@@ -99,9 +99,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                                 'email' => $email,
                                 'first_name' => $first_name,
                                 'last_name' => $last_name,
-                                'role' => 0, // 0 pour étudiant selon le fichier SQL
+                                'role' => 0, // 0 pour étudiant
                                 'phone_number' => $phone_number,
-                                'address' => $address
+                                'address' => $address,
+                                'sexe' => 'Non spécifié' // Obligatoire selon le schéma
                             ]);
                             
                             // Récupérer l'ID de l'étudiant inséré
