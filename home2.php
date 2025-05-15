@@ -3,7 +3,7 @@ session_start();
 require_once 'db.php'; // Assurez-vous que ce fichier contient la connexion appropriée
 
 // Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], [0, 1])) { // 0 pour étudiant, 1 pour professeur
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], [0, 1, 2])) { // 0 pour étudiant, 1 pour professeur, 2 pour administrateur
     header('Location: login.php'); // Redirigez vers la page de connexion
     exit();
 }
@@ -15,7 +15,7 @@ try {
     if ($user_role === 0) { // Étudiant
         // Récupérer la classe de l'étudiant
         $class_query = "
-            SELECT c.class_id, c.class_name 
+            SELECT c.class_id, c.class_name, c.année_scolaire
             FROM classes c
             JOIN student_classes sc ON c.class_id = sc.class_id
             WHERE sc.student_id = ?
@@ -30,13 +30,12 @@ try {
 
         // Récupérer les modules de la classe
         $modules_query = "
-            SELECT DISTINCT m.module_id, m.module_code, m.module_name, m.description,
-                   CONCAT(u.first_name, ' ', u.last_name) AS professor_name
+            SELECT m.id_module, m.code_module, m.nom_module, m.description,
+                   CONCAT(u.prenom, ' ', u.nom) AS professor_name
             FROM modules m
-            JOIN class_modules cm ON m.module_id = cm.module_id
-            JOIN professor_modules pm ON m.module_id = pm.module_id
-            JOIN users u ON pm.professor_id = u.user_id
-            WHERE cm.class_id = ?
+            JOIN profs_modules pm ON m.id_module = pm.id_module
+            JOIN user u ON pm.id_prof = u.id_user
+            WHERE m.class_id = ?
         ";
         $modules_stmt = $pdo->prepare($modules_query);
         $modules_stmt->execute([$student_class['class_id']]);
@@ -44,11 +43,11 @@ try {
 
         // Récupérer les notes récentes
         $grades_query = "
-            SELECT m.module_name, g.grade, g.graded_at
-            FROM grades g
-            JOIN modules m ON g.module_id = m.module_id
-            WHERE g.student_id = ?
-            ORDER BY g.graded_at DESC
+            SELECT m.nom_module, n.note, n.date_attribution
+            FROM notes n
+            JOIN modules m ON n.id_module = m.id_module
+            WHERE n.id_etudiant = ?
+            ORDER BY n.date_attribution DESC
             LIMIT 5
         ";
         $grades_stmt = $pdo->prepare($grades_query);
@@ -57,12 +56,11 @@ try {
 
         // Récupérer les exercices récents
         $exercises_query = "
-            SELECT e.exercise_id, e.title, m.module_name, e.created_at
-            FROM exercises e
-            JOIN modules m ON e.module_id = m.module_id
-            JOIN class_modules cm ON m.module_id = cm.module_id
-            WHERE cm.class_id = ?
-            ORDER BY e.created_at DESC
+            SELECT e.id_exercice, e.titre, m.nom_module, e.date_creation
+            FROM exercices e
+            JOIN modules m ON e.id_module = m.id_module
+            WHERE m.class_id = ?
+            ORDER BY e.date_creation DESC
             LIMIT 3
         ";
         $exercises_stmt = $pdo->prepare($exercises_query);
@@ -71,10 +69,10 @@ try {
     } elseif ($user_role === 1) { // Professeur
         // Récupérer les modules enseignés par le professeur
         $modules_query = "
-            SELECT m.module_id, m.module_code, m.module_name, m.description
+            SELECT m.id_module, m.code_module, m.nom_module, m.description
             FROM modules m
-            JOIN professor_modules pm ON m.module_id = pm.module_id
-            WHERE pm.professor_id = ?
+            JOIN profs_modules pm ON m.id_module = pm.id_module
+            WHERE pm.id_prof = ?
         ";
         $modules_stmt = $pdo->prepare($modules_query);
         $modules_stmt->execute([$user_id]);
@@ -82,30 +80,48 @@ try {
 
         // Récupérer les devoirs récents créés par le professeur
         $exercises_query = "
-            SELECT e.exercise_id, e.title, m.module_name, e.created_at
-            FROM exercises e
-            JOIN modules m ON e.module_id = m.module_id
-            WHERE e.professor_id = ?
-            ORDER BY e.created_at DESC
+            SELECT e.id_exercice, e.titre, m.nom_module, e.date_creation
+            FROM exercices e
+            JOIN modules m ON e.id_module = m.id_module
+            WHERE e.id_prof = ?
+            ORDER BY e.date_creation DESC
             LIMIT 5
         ";
         $exercises_stmt = $pdo->prepare($exercises_query);
         $exercises_stmt->execute([$user_id]);
         $recent_exercises = $exercises_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Récupérer les notes récentes attribuées par le professeur
-        $grades_query = "
-            SELECT g.grade_id, g.grade, g.graded_at, s.first_name, s.last_name, m.module_name
-            FROM grades g
-            JOIN modules m ON g.module_id = m.module_id
-            JOIN users s ON g.student_id = s.user_id
-            WHERE g.professor_id = ?
-            ORDER BY g.graded_at DESC
-            LIMIT 5
+ 
+    } elseif ($user_role === 2) { // Administrateur
+        // Récupérer tous les utilisateurs
+        $users_query = "
+            SELECT u.id_user, u.prenom, u.nom, u.email, u.role
+            FROM user u
+            ORDER BY u.role ASC, u.nom ASC
         ";
-        $grades_stmt = $pdo->prepare($grades_query);
-        $grades_stmt->execute([$user_id]);
-        $recent_grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
+        $users_stmt = $pdo->prepare($users_query);
+        $users_stmt->execute();
+        $users = $users_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Récupérer tous les modules
+        $modules_query = "
+            SELECT m.id_module, m.code_module, m.nom_module, m.description
+            FROM modules m
+            ORDER BY m.nom_module ASC
+        ";
+        $modules_stmt = $pdo->prepare($modules_query);
+        $modules_stmt->execute();
+        $modules = $modules_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Récupérer tous les cours
+        $courses_query = "
+            SELECT c.id_cours, c.titre, m.nom_module, c.date_creation
+            FROM cours c
+            JOIN modules m ON c.id_module = m.id_module
+            ORDER BY c.date_creation DESC
+        ";
+        $courses_stmt = $pdo->prepare($courses_query);
+        $courses_stmt->execute();
+        $courses = $courses_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (PDOException $e) {
     error_log("Erreur de base de données : " . $e->getMessage());
@@ -115,127 +131,214 @@ try {
     die($e->getMessage());
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord</title>
-    <?php include 'link.php'; ?>
-</head>
-<body>
-<?php include 'navbar.php'; ?>
-
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h1 class="card-title">Bienvenue, <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></h1>
-                    <?php if ($user_role === 0): ?>
-                        <p class="card-text">Classe : <?php echo htmlspecialchars($student_class['class_name']); ?></p>
-                    <?php else: ?>
-                        <p class="card-text">Voici un aperçu de vos activités récentes.</p>
-                    <?php endif; ?>
-                </div>
+ <?php if ($user_role === 0): ?>
+    <!-- Section : Modules -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Mes Modules</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($modules)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($modules as $module): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($module['code_module']); ?> - <?php echo htmlspecialchars($module['nom_module']); ?></strong>
+                                <br>
+                                <small class="text-muted">Professeur : <?php echo htmlspecialchars($module['professor_name']); ?></small>
+                                <br>
+                                <small class="text-muted"><?php echo htmlspecialchars($module['description']); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun module trouvé.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <!-- Modules -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Mes Modules</h5>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($modules)): ?>
-                        <ul class="list-unstyled">
-                            <?php foreach ($modules as $module): ?>
-                                <li class="mb-2">
-                                    <strong><?php echo htmlspecialchars($module['module_code']); ?> - <?php echo htmlspecialchars($module['module_name']); ?></strong>
-                                    <?php if ($user_role === 0): ?>
-                                        <br><small class="text-muted">Professeur : <?php echo htmlspecialchars($module['professor_name']); ?></small>
-                                    <?php endif; ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p class="text-muted">Aucun module trouvé.</p>
-                    <?php endif; ?>
-                </div>
-                <div class="card-footer">
-                    <a href="cours.php" class="btn btn-sm btn-outline-primary">Voir tous les modules</a>
-                </div>
+    <!-- Section : Notes récentes -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">Mes Notes Récentes</h5>
             </div>
-        </div>
-
-        <!-- Notes ou devoirs récents -->
-        <?php if ($user_role === 0): ?>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">Mes Notes</h5>
-                    </div>
-                    <div class="card-body">
-                        <?php if (!empty($recent_grades)): ?>
-                            <ul class="list-unstyled">
-                                <?php foreach ($recent_grades as $grade): ?>
-                                    <li class="mb-2">
-                                        <strong><?php echo htmlspecialchars($grade['module_name']); ?></strong>
-                                        <br>
-                                        <span class="badge <?php echo $grade['grade'] >= 10 ? 'bg-success' : 'bg-danger'; ?>">
-                                            <?php echo number_format($grade['grade'], 2); ?>/20
-                                        </span>
-                                        <small class="text-muted ml-2">
-                                            Le <?php echo date('d/m/Y', strtotime($grade['graded_at'])); ?>
-                                        </small>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
-                            <p class="text-muted">Aucune note disponible.</p>
-                        <?php endif; ?>
-                    </div>
-                    <div class="card-footer">
-                        <a href="grades.php" class="btn btn-sm btn-outline-success">Voir toutes les notes</a>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header bg-warning text-white">
-                    <h5 class="card-title mb-0">Devoirs Récents</h5>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($recent_exercises)): ?>
-                        <ul class="list-unstyled">
-                            <?php foreach ($recent_exercises as $exercise): ?>
-                                <li class="mb-2">
-                                    <strong><?php echo htmlspecialchars($exercise['title']); ?></strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        Module : <?php echo htmlspecialchars($exercise['module_name']); ?>
-                                        <br>
-                                        Créé le : <?php echo date('d/m/Y', strtotime($exercise['created_at'])); ?>
-                                    </small>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p class="text-muted">Aucun devoir récent.</p>
-                    <?php endif; ?>
-                </div>
-                <div class="card-footer">
-                    <a href="exercises.php" class="btn btn-sm btn-outline-warning">Voir tous les devoirs</a>
-                </div>
+            <div class="card-body">
+                <?php if (!empty($recent_grades)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($recent_grades as $grade): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($grade['nom_module']); ?></strong>
+                                <br>
+                                <span class="badge <?php echo $grade['note'] >= 10 ? 'bg-success' : 'bg-danger'; ?>">
+                                    <?php echo number_format($grade['note'], 2); ?>/20
+                                </span>
+                                <small class="text-muted ml-2">
+                                    Le <?php echo date('d/m/Y', strtotime($grade['date_attribution'])); ?>
+                                </small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucune note disponible.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
-</div>
-</body>
-</html>
+
+    <!-- Section : Exercices récents -->
+    <div class="col-md-12 mt-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">Exercices Récents</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($recent_exercises)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($recent_exercises as $exercise): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($exercise['titre']); ?></strong>
+                                <br>
+                                <small class="text-muted">Module : <?php echo htmlspecialchars($exercise['nom_module']); ?></small>
+                                <br>
+                                <small class="text-muted">Créé le : <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun exercice récent trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+<?php if ($user_role === 1): ?>
+    <!-- Section : Modules enseignés -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Modules Enseignés</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($modules)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($modules as $module): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($module['code_module']); ?> - <?php echo htmlspecialchars($module['nom_module']); ?></strong>
+                                <br>
+                                <small class="text-muted"><?php echo htmlspecialchars($module['description']); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun module trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section : Devoirs récents -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">Devoirs Récents</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($recent_exercises)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($recent_exercises as $exercise): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($exercise['titre']); ?></strong>
+                                <br>
+                                <small class="text-muted">Module : <?php echo htmlspecialchars($exercise['nom_module']); ?></small>
+                                <br>
+                                <small class="text-muted">Créé le : <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun devoir récent trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+<?php if ($user_role === 1): ?>
+    <!-- Section : Modules enseignés -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Modules Enseignés</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($modules)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($modules as $module): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($module['code_module']); ?> - <?php echo htmlspecialchars($module['nom_module']); ?></strong>
+                                <br>
+                                <small class="text-muted"><?php echo htmlspecialchars($module['description']); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun module trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section : Devoirs récents -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">Devoirs Récents</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($recent_exercises)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($recent_exercises as $exercise): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($exercise['titre']); ?></strong>
+                                <br>
+                                <small class="text-muted">Module : <?php echo htmlspecialchars($exercise['nom_module']); ?></small>
+                                <br>
+                                <small class="text-muted">Créé le : <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun devoir récent trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+<?php if ($user_role === 2): ?>
+    <!-- Section : Utilisateurs -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">Liste des Utilisateurs</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($users)): ?>
+                    <ul class="list-unstyled">
+                        <?php foreach ($users as $user): ?>
+                            <li class="mb-2">
+                                <strong><?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?></strong>
+                                <br>
+                                <small class="text-muted">Email : <?php echo htmlspecialchars($user['email']); ?></small>
+                                <br>
+                                <small class="text-muted">Rôle : <?php echo $user['role'] == 0 ? 'Étudiant' : ($user['role'] == 1 ? 'Professeur' : 'Administrateur'); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted">Aucun utilisateur trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
