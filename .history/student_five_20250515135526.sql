@@ -36,7 +36,7 @@ CREATE TABLE `classes` (
   `class_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `class_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
-  `année_scolaire` varchar  (20) NOT NULL,
+  `année_scolaire` varchar int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`class_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -45,7 +45,7 @@ CREATE TABLE `classes` (
 CREATE TABLE `modules` (
   `id_module` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `class_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `code_module` varchar(20) NOT NULL UNIQUE,
+  //`code_module` varchar(20) NOT NULL UNIQUE,//
   `nom_module` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
