@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Créer une nouvelle classe si nécessaire
             if ($class_id === 'new' && isset($_POST['new_class_name'])) {
                 $new_class_name = trim($_POST['new_class_name']);
-                $new_class_year = isset($_POST['new_class_year']) ? intval($_POST['new_class_year']) : date('Y');
+                $new_class_year = $_POST['new_class_year'];
                 $new_class_desc = trim($_POST['new_class_desc'] ?? '');
                 
                 $createClassSql = "INSERT INTO classes (class_name, année_scolaire, description) 
@@ -424,10 +424,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         <?php
                                         // Récupérer la liste des classes existantes
                                         try {
-                                            $classesSql = "SELECT class_id, class_name, enrollment_year FROM classes ORDER BY enrollment_year DESC, class_name";
+                                            $classesSql = "SELECT class_id, class_name, année_scolaire FROM classes ORDER BY class_name";
                                             $classesStmt = $pdo->query($classesSql);
                                             while ($class = $classesStmt->fetch()) {
-                                                echo '<option value="' . $class['class_id'] . '">' . htmlspecialchars($class['class_name']) . ' (' . $class['enrollment_year'] . ')</option>';
+                                                echo '<option value="' . $class['class_id'] . '">' . htmlspecialchars($class['class_name']) . ' (' . $class['année_scolaire'] . ')</option>';
                                             }
                                         } catch (PDOException $e) {
                                             // Gérer l'erreur en silence, l'utilisateur pourra toujours créer un élève sans classe
@@ -446,8 +446,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         <input type="text" class="form-control" id="new_class_name" name="new_class_name">
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label for="new_class_year" class="form-label">Année d'entrée</label>
-                                        <input type="number" class="form-control" id="new_class_year" name="new_class_year" value="<?php echo date('Y'); ?>" min="2000" max="2100">
+                                        <label for="new_class_year" class="form-label">Année scolaire</label>
+                                        <input type="text" class="form-control" id="new_class_year" name="new_class_year" placeholder="Ex: 24/25 ou 2024/2025">
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="new_class_desc" class="form-label">Description</label>

@@ -3,21 +3,21 @@ session_start();
 require("db.php");
 
 // Vérifier si l'utilisateur est connecté et est un admin
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] != 2) { // 2 pour admin
-    // Rediriger vers la page de connexion ou une page d'erreur
-    header("Location: login.php");
-    exit();
-}
+// if (!isset($_SESSION["user_id"]) || $_SESSION["role"] != 2) { // 2 pour admin
+//     // Rediriger vers la page de connexion ou une page d'erreur
+//     header("Location: login.php");
+//     exit();
+// }
 
 // Vérifier si le formulaire a été soumis
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FILES["csv_file"])) {
     $class_name = trim($_POST["class"]);
-    $enrollment_year = isset($_POST["enrollment_year"]) ? intval($_POST["enrollment_year"]) : date("Y");
+    $enrollment_year = $_POST["enrollment_year"];
     $class_description = isset($_POST["class_description"]) ? trim($_POST["class_description"]) : '';
     
     try {
         // 1. Créer la classe dans la table 'classes'
-        $classSql = "INSERT INTO classes (class_name, description, enrollment_year) 
+        $classSql = "INSERT INTO classes (class_name, description, année_scolaire) 
                      VALUES (:class_name, :description, :enrollment_year)";
         $classStmt = $pdo->prepare($classSql);
         $classStmt->execute([
@@ -48,14 +48,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                 // Lire le fichier CSV ligne par ligne
                 while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                     // Vérifier que nous avons les colonnes nécessaires
-                    if (count($data) >= 7) {
-                        $username = trim($data[0]);
-                        $first_name = trim($data[1]);
-                        $last_name = trim($data[2]);
-                        $email = trim($data[3]);
-                        $phone_number = trim($data[4]);
-                        $address = trim($data[5]);
-                        $password = trim($data[6]);
+                    if (count($data) >= 6) {
+                        $first_name = trim($data[0]);
+                        $last_name = trim($data[1]);
+                        $email = trim($data[2]);
+                        $phone_number = trim($data[3]);
+                        $address = trim($data[4]);
+                        $password = trim($data[5]);
                         
                         // Valider les données
                         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -72,9 +71,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                         
                         try {
                             // Vérifier si l'utilisateur existe déjà
-                            $checkSql = "SELECT * FROM users WHERE email = :email OR username = :username";
+                            $checkSql = "SELECT * FROM user WHERE email = :email";
                             $checkStmt = $pdo->prepare($checkSql);
-                            $checkStmt->execute(['email' => $email, 'username' => $username]);
+                            $checkStmt->execute(['email' => $email]);
                             $user = $checkStmt->fetch();
                             
                             if ($user) {
@@ -90,11 +89,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
                             $password_hash = password_hash($password, PASSWORD_DEFAULT);
                             
                             // Insérer l'élève dans la table users
-                            $insertSql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
-                                          VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
+                            $insertSql = "INSERT INTO user (mdp, email, prenom, nom, role, telephone, adresse) 
+                                          VALUES (:password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
                             $insertStmt = $pdo->prepare($insertSql);
                             $insertStmt->execute([
-                                'username' => $username,
                                 'password_hash' => $password_hash,
                                 'email' => $email,
                                 'first_name' => $first_name,
