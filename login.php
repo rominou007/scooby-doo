@@ -2,35 +2,35 @@
     session_start();
     require("db.php");
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $email = trim($_POST["email"]);
-        $password = $_POST["password"];
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $email = trim($_POST["email"]);
+            $password = $_POST["password"];
 
-        if(empty($email) || empty($password)){
-            die("Veuillez remplir tous les champs !");
+            if(empty($email) || empty($password)){
+                die("Veuillez remplir tous les champs !");
+            }
+
+            $sql = "SELECT * FROM users WHERE email = :email";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(['email' => $email]);
+            
+            $user = $stmt->fetch();
+
+
+            if($user && password_verify($password, $user['password_hash'])){
+            
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['first_name'] = $user['first_name'];
+                $_SESSION['last_name'] = $user['last_name'];
+
+                header("location: home.php");
+            } else {
+                die("Adresse email ou mot de passe incorrect !");
+            }
         }
-
-        // Requête mise à jour pour utiliser la table 'user' et les colonnes correspondantes
-        $sql = "SELECT * FROM user WHERE email = :email";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
-        
-        $user = $stmt->fetch();
-
-        if($user && password_verify($password, $user['mdp'])){
-            // Session avec les nouveaux noms de colonnes
-            $_SESSION['username'] = $user['nom_user'];
-            $_SESSION['user_id'] = $user['id_user'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['first_name'] = $user['prenom'];
-            $_SESSION['last_name'] = $user['nom'];
-
-            header("location: home.php");
-        } else {
-            die("Adresse email ou mot de passe incorrect !");
-        }
-    }
-?>
+    ?>
 
 <!DOCTYPE html>
 <html lang="fr">

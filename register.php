@@ -69,8 +69,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             // Insérer l'élève avec le rôle 0 (étudiant)
-            $sql = "INSERT INTO user (nom_user, mdp, email, prenom, nom, role, telephone, adresse, sexe) 
-                    VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address, :sexe)";
+            $sql = "INSERT INTO users (username, password_hash, email, first_name, last_name, role, phone_number, address) 
+                    VALUES (:username, :password_hash, :email, :first_name, :last_name, :role, :phone_number, :address)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 'username' => $username,
@@ -80,8 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'last_name' => $last_name,
                 'role' => 0, // INT 0 pour étudiant
                 'phone_number' => $phone_number,
-                'address' => $address,
-                'sexe' => 'Non spécifié' // Valeur par défaut car champ obligatoire
+                'address' => $address
             ]);
             
             $student_id = $pdo->lastInsertId();

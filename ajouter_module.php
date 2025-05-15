@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erreur = "Veuillez remplir tous les champs obligatoires.";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO modules (code_module, nom_module, description) VALUES (:code, :name, :desc)");
+            $stmt = $pdo->prepare("INSERT INTO modules (module_code, module_name, description) VALUES (:code, :name, :desc)");
             $stmt->execute([
                 'code' => $module_code,
                 'name' => $module_name,

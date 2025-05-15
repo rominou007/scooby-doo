@@ -7,10 +7,10 @@
     }
     
     // Récupérer tous les articles
-    $stmt = $pdo->query("SELECT a.*, u.nom_user, u.prenom, u.nom, 
+    $stmt = $pdo->query("SELECT a.*, u.username, u.first_name, u.last_name, 
                          (SELECT COUNT(*) FROM forum_commentaires WHERE article_id = a.article_id) AS nb_commentaires 
                          FROM forum_articles a 
-                         JOIN user u ON a.user_id = u.id_user 
+                         JOIN users u ON a.user_id = u.user_id 
                          ORDER BY a.date_creation DESC");
     $articles = $stmt->fetchAll();
 ?>
@@ -48,7 +48,7 @@
                                             <small><?= $article['nb_commentaires'] ?> réponses</small>
                                         </div>
                                         <p class="mb-1"><?= substr(htmlspecialchars($article['contenu']), 0, 150) ?>...</p>
-                                        <small>Par <?= htmlspecialchars($article['prenom'] . ' ' . $article['nom']) ?> - <?= date('d/m/Y H:i', strtotime($article['date_creation'])) ?></small>
+                                        <small>Par <?= htmlspecialchars($article['first_name'] . ' ' . $article['last_name']) ?> - <?= date('d/m/Y H:i', strtotime($article['date_creation'])) ?></small>
                                     </a>
                                 <?php endforeach; ?>
                             </div>

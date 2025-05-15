@@ -14,10 +14,10 @@
     $article_id = (int)$_GET['id'];
     
     // Récupérer les informations de l'article
-    $stmt = $pdo->prepare("SELECT a.*, u.nom_user, u.prenom, u.nom 
-                     FROM forum_articles a 
-                     JOIN user u ON a.user_id = u.id_user 
-                     WHERE a.article_id = :article_id");
+    $stmt = $pdo->prepare("SELECT a.*, u.username, u.first_name, u.last_name 
+                          FROM forum_articles a 
+                          JOIN users u ON a.user_id = u.user_id 
+                          WHERE a.article_id = :article_id");
     $stmt->execute(['article_id' => $article_id]);
     $article = $stmt->fetch();
     
@@ -27,11 +27,11 @@
     }
     
     // Récupérer les commentaires
-    $stmt = $pdo->prepare("SELECT c.*, u.nom_user, u.prenom, u.nom 
-                     FROM forum_commentaires c 
-                     JOIN user u ON c.user_id = u.id_user 
-                     WHERE c.article_id = :article_id 
-                     ORDER BY c.date_creation");
+    $stmt = $pdo->prepare("SELECT c.*, u.username, u.first_name, u.last_name 
+                          FROM forum_commentaires c 
+                          JOIN users u ON c.user_id = u.user_id 
+                          WHERE c.article_id = :article_id 
+                          ORDER BY c.date_creation");
     $stmt->execute(['article_id' => $article_id]);
     $commentaires = $stmt->fetchAll();
     
