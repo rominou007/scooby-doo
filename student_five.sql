@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Hôte : 127.0.0.1
--- Généré le : mar. 13 mai 2025 à 10:38
--- Version du serveur : 10.4.32-MariaDB
--- Version de PHP : 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: May 15, 2025 at 09:26 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `student_five`
+-- Database: `student_five`
 --
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `classes`
+-- Table structure for table `classes`
 --
 
 CREATE TABLE `classes` (
@@ -38,7 +38,7 @@ CREATE TABLE `classes` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `class_modules`
+-- Table structure for table `class_modules`
 --
 
 CREATE TABLE `class_modules` (
@@ -50,7 +50,7 @@ CREATE TABLE `class_modules` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `courses`
+-- Table structure for table `courses`
 --
 
 CREATE TABLE `courses` (
@@ -65,7 +65,7 @@ CREATE TABLE `courses` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `documents`
+-- Table structure for table `documents`
 --
 
 CREATE TABLE `documents` (
@@ -76,17 +76,10 @@ CREATE TABLE `documents` (
   `uploaded_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `documents`
---
-
-INSERT INTO `documents` (`document_id`, `student_id`, `document_type`, `file_path`, `uploaded_at`) VALUES
-(1, 0, 'module_doc_1', 'uploads/gearMotor.stl', '2025-05-13 08:35:42');
-
 -- --------------------------------------------------------
 
 --
--- Structure de la table `exercises`
+-- Table structure for table `exercises`
 --
 
 CREATE TABLE `exercises` (
@@ -101,7 +94,35 @@ CREATE TABLE `exercises` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `grades`
+-- Table structure for table `forum_articles`
+--
+
+CREATE TABLE `forum_articles` (
+  `article_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `titre` varchar(255) NOT NULL,
+  `contenu` text NOT NULL,
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `forum_commentaires`
+--
+
+CREATE TABLE `forum_commentaires` (
+  `commentaire_id` bigint(20) UNSIGNED NOT NULL,
+  `article_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `contenu` text NOT NULL,
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `grades`
 --
 
 CREATE TABLE `grades` (
@@ -115,7 +136,7 @@ CREATE TABLE `grades` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `modules`
+-- Table structure for table `modules`
 --
 
 CREATE TABLE `modules` (
@@ -126,17 +147,25 @@ CREATE TABLE `modules` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
--- Déchargement des données de la table `modules`
+-- Table structure for table `plannings`
 --
 
-INSERT INTO `modules` (`module_id`, `module_code`, `module_name`, `description`, `created_at`) VALUES
-(1, 'Test1', 'Test1', 'premier test', '2025-05-13 07:19:16');
+CREATE TABLE `plannings` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `module_id` bigint(20) UNSIGNED NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `professor_modules`
+-- Table structure for table `professor_modules`
 --
 
 CREATE TABLE `professor_modules` (
@@ -148,7 +177,7 @@ CREATE TABLE `professor_modules` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `quizzes`
+-- Table structure for table `quizzes`
 --
 
 CREATE TABLE `quizzes` (
@@ -163,7 +192,7 @@ CREATE TABLE `quizzes` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `student_classes`
+-- Table structure for table `student_classes`
 --
 
 CREATE TABLE `student_classes` (
@@ -176,7 +205,7 @@ CREATE TABLE `student_classes` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -186,124 +215,107 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `first_name` varchar(50) DEFAULT NULL,
   `last_name` varchar(50) DEFAULT NULL,
-  `role` INT NOT NULL, -- 0: student, 1: professor, 2: admin
+  `role` int(11) NOT NULL,
   `phone_number` varchar(15) DEFAULT NULL,
   `address` text DEFAULT NULL,
+  `sexe` varchar(10) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `users`
---
-
-INSERT INTO `users` (`user_id`, `username`, `password_hash`, `email`, `first_name`, `last_name`, `role`, `phone_number`, `address`, `created_at`) VALUES
-(1, 'AdminAntoine', '$2y$10$rWLVJR.WcIs3ZYk/wP8Jouo2RbJMavxTFB.ATjrSdka5LMm/xss42', 'adminantoine@gmail.com', 'Antoine', 'Gobron', 'admin', '0606060606', 'non', '2025-05-13 07:08:50');
-
--- --------------------------------------------------------
-
---
--- Structure de la table `forum_articles`
---
-
-CREATE TABLE `forum_articles` (
-  `article_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `titre` varchar(255) NOT NULL,
-  `contenu` text NOT NULL,
-  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`article_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `forum_articles_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Structure de la table `forum_commentaires`
---
-
-CREATE TABLE `forum_commentaires` (
-  `commentaire_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `article_id` bigint(20) UNSIGNED NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `contenu` text NOT NULL,
-  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`commentaire_id`),
-  KEY `article_id` (`article_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `forum_commentaires_article_fk` FOREIGN KEY (`article_id`) REFERENCES `forum_articles` (`article_id`) ON DELETE CASCADE,
-  CONSTRAINT `forum_commentaires_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Index pour les tables déchargées
+-- Indexes for dumped tables
 --
 
 --
--- Index pour la table `classes`
+-- Indexes for table `classes`
 --
 ALTER TABLE `classes`
   ADD PRIMARY KEY (`class_id`);
 
 --
--- Index pour la table `class_modules`
+-- Indexes for table `class_modules`
 --
 ALTER TABLE `class_modules`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `class_id` (`class_id`,`module_id`);
 
 --
--- Index pour la table `courses`
+-- Indexes for table `courses`
 --
 ALTER TABLE `courses`
   ADD PRIMARY KEY (`course_id`);
 
 --
--- Index pour la table `documents`
+-- Indexes for table `documents`
 --
 ALTER TABLE `documents`
   ADD PRIMARY KEY (`document_id`);
 
 --
--- Index pour la table `exercises`
+-- Indexes for table `exercises`
 --
 ALTER TABLE `exercises`
   ADD PRIMARY KEY (`exercise_id`);
 
 --
--- Index pour la table `grades`
+-- Indexes for table `forum_articles`
+--
+ALTER TABLE `forum_articles`
+  ADD PRIMARY KEY (`article_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `forum_commentaires`
+--
+ALTER TABLE `forum_commentaires`
+  ADD PRIMARY KEY (`commentaire_id`),
+  ADD KEY `article_id` (`article_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `grades`
 --
 ALTER TABLE `grades`
   ADD PRIMARY KEY (`grade_id`),
   ADD UNIQUE KEY `student_id` (`student_id`,`module_id`);
 
 --
--- Index pour la table `modules`
+-- Indexes for table `modules`
 --
 ALTER TABLE `modules`
   ADD PRIMARY KEY (`module_id`),
   ADD UNIQUE KEY `module_code` (`module_code`);
 
 --
--- Index pour la table `professor_modules`
+-- Indexes for table `plannings`
+--
+ALTER TABLE `plannings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `module_id` (`module_id`);
+
+--
+-- Indexes for table `professor_modules`
 --
 ALTER TABLE `professor_modules`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `professor_id` (`professor_id`,`module_id`);
 
 --
--- Index pour la table `quizzes`
+-- Indexes for table `quizzes`
 --
 ALTER TABLE `quizzes`
   ADD PRIMARY KEY (`quiz_id`);
 
 --
--- Index pour la table `student_classes`
+-- Indexes for table `student_classes`
 --
 ALTER TABLE `student_classes`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `student_id` (`student_id`);
 
 --
--- Index pour la table `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
@@ -311,74 +323,116 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- AUTO_INCREMENT pour les tables déchargées
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT pour la table `classes`
+-- AUTO_INCREMENT for table `classes`
 --
 ALTER TABLE `classes`
   MODIFY `class_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `class_modules`
+-- AUTO_INCREMENT for table `class_modules`
 --
 ALTER TABLE `class_modules`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `courses`
+-- AUTO_INCREMENT for table `courses`
 --
 ALTER TABLE `courses`
   MODIFY `course_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `documents`
+-- AUTO_INCREMENT for table `documents`
 --
 ALTER TABLE `documents`
-  MODIFY `document_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `document_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `exercises`
+-- AUTO_INCREMENT for table `exercises`
 --
 ALTER TABLE `exercises`
   MODIFY `exercise_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `grades`
+-- AUTO_INCREMENT for table `forum_articles`
+--
+ALTER TABLE `forum_articles`
+  MODIFY `article_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `forum_commentaires`
+--
+ALTER TABLE `forum_commentaires`
+  MODIFY `commentaire_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `grades`
 --
 ALTER TABLE `grades`
   MODIFY `grade_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `modules`
+-- AUTO_INCREMENT for table `modules`
 --
 ALTER TABLE `modules`
-  MODIFY `module_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `module_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `professor_modules`
+-- AUTO_INCREMENT for table `plannings`
+--
+ALTER TABLE `plannings`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `professor_modules`
 --
 ALTER TABLE `professor_modules`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `quizzes`
+-- AUTO_INCREMENT for table `quizzes`
 --
 ALTER TABLE `quizzes`
   MODIFY `quiz_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `student_classes`
+-- AUTO_INCREMENT for table `student_classes`
 --
 ALTER TABLE `student_classes`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `forum_articles`
+--
+ALTER TABLE `forum_articles`
+  ADD CONSTRAINT `forum_articles_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `forum_commentaires`
+--
+ALTER TABLE `forum_commentaires`
+  ADD CONSTRAINT `forum_commentaires_article_fk` FOREIGN KEY (`article_id`) REFERENCES `forum_articles` (`article_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `forum_commentaires_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `plannings`
+--
+ALTER TABLE `plannings`
+  ADD CONSTRAINT `planning_module_fk` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `planning_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
