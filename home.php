@@ -19,7 +19,7 @@ if (!isset($_SESSION['user_id'])) {
 <?php include("navbar.php"); ?>
 
 <div class="container mt-5 text-center">
-    <h1 class="mb-4">Bienvenue sur la plateforme</h1>
+    <h1 class="mb-4 text-white">Bienvenue sur la plateforme</h1>
     <a href="modules.php" class="btn btn-primary btn-lg">Liste des modules</a>
 </div>
 

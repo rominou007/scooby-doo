@@ -4,7 +4,7 @@
     if(!isset($_SESSION['id'])){
         header("location: index.php");
         return;
-    } elseif($_SESSION['access'] != 1){
+    } elseif($_SESSION['role'] != 2){
         header("location: home.php");
     }
     $listUsers = $pdo->query("SELECT * FROM users")->fetchAll();
