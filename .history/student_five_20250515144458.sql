@@ -83,7 +83,7 @@ CREATE TABLE `student_classes` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `student_id` bigint(20) UNSIGNED NOT NULL,
   `class_id` bigint(20) UNSIGNED NOT NULL,
-  `date-creation` timestamp NOT NULL DEFAULT current_timestamp(),
+  `assigned_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `student_class_unique` (`student_id`, `class_id`),
   FOREIGN KEY (`student_id`) REFERENCES `user` (`id_user`) ON DELETE CASCADE,

@@ -1,25 +1,22 @@
--- Suppression et création de la base
+-- Suppression de la base si elle existe et création
 DROP DATABASE IF EXISTS nouvelle_base;
 CREATE DATABASE nouvelle_base CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE nouvelle_base;
 
--- Suppression des tables existantes (ordre inverse des dépendances)
-DROP TABLE IF EXISTS `forum_commentaires`;
-DROP TABLE IF EXISTS `forum_articles`;
+-- Suppression des tables existantes si elles existent (ordre inverse des dépendances)
 DROP TABLE IF EXISTS `notes`;
 DROP TABLE IF EXISTS `documents`;
 DROP TABLE IF EXISTS `quiz`;
 DROP TABLE IF EXISTS `exercices`;
 DROP TABLE IF EXISTS `cours`;
 DROP TABLE IF EXISTS `profs_modules`;
-DROP TABLE IF EXISTS `student_classes`;
 DROP TABLE IF EXISTS `modules`;
-DROP TABLE IF EXISTS `classes`;
 DROP TABLE IF EXISTS `user`;
 
--- Table des utilisateurs
+-- Table structure pour table `user`
 CREATE TABLE `user` (
   `id_user` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nom_user` varchar(50) NOT NULL UNIQUE,
   `mdp` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL UNIQUE,
   `prenom` varchar(50) DEFAULT NULL,
@@ -32,29 +29,17 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table des classes
-CREATE TABLE `classes` (
-  `class_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `class_name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `année_scolaire` varchar  (20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`class_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Table des modules (chaque module appartient à une classe)
+-- Table structure pour table `modules`
 CREATE TABLE `modules` (
   `id_module` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `class_id` bigint(20) UNSIGNED DEFAULT NULL,
   `code_module` varchar(20) NOT NULL UNIQUE,
   `nom_module` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_module`),
-  FOREIGN KEY (`class_id`) REFERENCES `classes` (`class_id`) ON DELETE SET NULL
+  PRIMARY KEY (`id_module`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table des cours
+-- Table structure pour table `cours`
 CREATE TABLE `cours` (
   `id_cours` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_module` bigint(20) UNSIGNED NOT NULL,
@@ -67,7 +52,7 @@ CREATE TABLE `cours` (
   FOREIGN KEY (`id_prof`) REFERENCES `user` (`id_user`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table de liaison professeurs <-> modules
+-- Table structure pour table `profs_modules`
 CREATE TABLE `profs_modules` (
   `id_prof_module` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_prof` bigint(20) UNSIGNED NOT NULL,
@@ -78,19 +63,7 @@ CREATE TABLE `profs_modules` (
   FOREIGN KEY (`id_module`) REFERENCES `modules` (`id_module`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table de liaison étudiants <-> classes
-CREATE TABLE `student_classes` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `student_id` bigint(20) UNSIGNED NOT NULL,
-  `class_id` bigint(20) UNSIGNED NOT NULL,
-  `date-creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `student_class_unique` (`student_id`, `class_id`),
-  FOREIGN KEY (`student_id`) REFERENCES `user` (`id_user`) ON DELETE CASCADE,
-  FOREIGN KEY (`class_id`) REFERENCES `classes` (`class_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Table des exercices
+-- Table structure pour table `exercices`
 CREATE TABLE `exercices` (
   `id_exercice` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_module` bigint(20) UNSIGNED NOT NULL,
@@ -103,7 +76,7 @@ CREATE TABLE `exercices` (
   FOREIGN KEY (`id_prof`) REFERENCES `user` (`id_user`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table des quiz
+-- Table structure pour table `quiz`
 CREATE TABLE `quiz` (
   `id_quiz` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_module` bigint(20) UNSIGNED NOT NULL,
@@ -116,7 +89,7 @@ CREATE TABLE `quiz` (
   FOREIGN KEY (`id_prof`) REFERENCES `user` (`id_user`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table des documents
+-- Table structure pour table `documents`
 CREATE TABLE `documents` (
   `id_document` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_etudiant` bigint(20) UNSIGNED NOT NULL,
@@ -127,7 +100,7 @@ CREATE TABLE `documents` (
   FOREIGN KEY (`id_etudiant`) REFERENCES `user` (`id_user`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table des notes
+-- Table structure pour table `notes`
 CREATE TABLE `notes` (
   `id_note` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_etudiant` bigint(20) UNSIGNED NOT NULL,
@@ -140,27 +113,10 @@ CREATE TABLE `notes` (
   FOREIGN KEY (`id_module`) REFERENCES `modules` (`id_module`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Table des articles du forum
-CREATE TABLE `forum_articles` (
-  `article_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `titre` varchar(255) NOT NULL,
-  `contenu` text NOT NULL,
-  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`article_id`),
-  FOREIGN KEY (`user_id`) REFERENCES `user` (`id_user`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+--
+-- Déchargement des données de la table users
+--
 
--- Table des commentaires du forum
-CREATE TABLE `forum_commentaires` (
-  `commentaire_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `article_id` bigint(20) UNSIGNED NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `contenu` text NOT NULL,
-  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`commentaire_id`),
-  FOREIGN KEY (`article_id`) REFERENCES `forum_articles` (`article_id`) ON DELETE CASCADE,
-  FOREIGN KEY (`user_id`) REFERENCES `user` (`id_user`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
+INSERT INTO users (user_id, username, password_hash, email, first_name, last_name, role, phone_number, address, created_at) VALUES
+(1, 'AdminAntoine', '$2y$10$rWLVJR.WcIs3ZYk/wP8Jouo2RbJMavxTFB.ATjrSdka5LMm/xss42', 'adminantoine@gmail.com', 'Antoine', 'Gobron', 0, '0606060606', 'non', '2025-05-13 07:08:50');
 COMMIT;

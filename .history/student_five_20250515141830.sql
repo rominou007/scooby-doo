@@ -12,7 +12,6 @@ DROP TABLE IF EXISTS `quiz`;
 DROP TABLE IF EXISTS `exercices`;
 DROP TABLE IF EXISTS `cours`;
 DROP TABLE IF EXISTS `profs_modules`;
-DROP TABLE IF EXISTS `student_classes`;
 DROP TABLE IF EXISTS `modules`;
 DROP TABLE IF EXISTS `classes`;
 DROP TABLE IF EXISTS `user`;
@@ -76,18 +75,6 @@ CREATE TABLE `profs_modules` (
   UNIQUE KEY `prof_module_unique` (`id_prof`, `id_module`),
   FOREIGN KEY (`id_prof`) REFERENCES `user` (`id_user`) ON DELETE CASCADE,
   FOREIGN KEY (`id_module`) REFERENCES `modules` (`id_module`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Table de liaison étudiants <-> classes
-CREATE TABLE `student_classes` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `student_id` bigint(20) UNSIGNED NOT NULL,
-  `class_id` bigint(20) UNSIGNED NOT NULL,
-  `date-creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `student_class_unique` (`student_id`, `class_id`),
-  FOREIGN KEY (`student_id`) REFERENCES `user` (`id_user`) ON DELETE CASCADE,
-  FOREIGN KEY (`class_id`) REFERENCES `classes` (`class_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table des exercices
