@@ -20,8 +20,16 @@ $modules = $stmt->fetchAll();
 <div class="container mt-5">
     <h1 class="mb-4 text-white">Liste des modules</h1>
 
+    <?php
+    // Debug temporaire pour vérifier la valeur du rôle
+    // À retirer en production !
+    if (isset($_SESSION['role'])) {
+        echo '<div class="alert alert-warning">Votre rôle : ' . htmlspecialchars($_SESSION['role']) . '</div>';
+    }
+    ?>
+
     <!-- Ajouter un module si admin ou professeur -->
-    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2])): ?>
+    <?php if (isset($_SESSION['role']) && in_array((int)$_SESSION['role'], [1, 2])): ?>
         <a href="ajouter_module.php" class="btn btn-success mb-3">Ajouter un module</a>
     <?php endif; ?>
 

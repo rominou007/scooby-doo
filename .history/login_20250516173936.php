@@ -1,12 +1,10 @@
 <?php
 session_start();
-require("db.php");
-
-// Redirige si déjà connecté
 if (isset($_SESSION['user_id'])) {
     header("Location: home.php");
     exit;
 }
+require("db.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
@@ -19,17 +17,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "SELECT * FROM user WHERE email = :email";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['email' => $email]);
+    
     $user = $stmt->fetch();
 
+
     if($user && password_verify($password, $user['mdp'])){
-        $_SESSION['username'] = $user['nom_user'];
-        $_SESSION['user_id'] = $user['id_user'];
+    
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['role'] = $user['role'];
-        $_SESSION['first_name'] = $user['prenom'];
-        $_SESSION['last_name'] = $user['nom'];
+        $_SESSION['first_name'] = $user['first_name'];
+        $_SESSION['last_name'] = $user['last_name'];
 
         header("location: home.php");
-        exit;
+        exit; // <-- Ajoute ceci pour stopper l'exécution
     } else {
         die("Adresse email ou mot de passe incorrect !");
     }
@@ -42,8 +43,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
+    
     <?php include("link.php"); ?>
 </head>
+
+<?php include("navbar.php"); ?>
 <body class="bg-secondary">
 
 <div class="container-fluid login-container">

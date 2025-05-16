@@ -59,7 +59,7 @@ $documents = $stmt->fetchAll();
 <body>
 <?php include("navbar.php"); ?>
 
-<div class="container mt-5 text-white">
+<div class="container mt-5">
     <h1><?= htmlspecialchars($module['nom_module']) ?></h1>
     <p><?= htmlspecialchars($module['description']) ?></p>
 

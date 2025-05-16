@@ -1,40 +1,36 @@
 <?php
-session_start();
-require("db.php");
+    session_start();
+    require("db.php");
 
-// Redirige si déjà connecté
-if (isset($_SESSION['user_id'])) {
-    header("Location: home.php");
-    exit;
-}
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $email = trim($_POST["email"]);
+            $password = $_POST["password"];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST["email"]);
-    $password = $_POST["password"];
+            if(empty($email) || empty($password)){
+                die("Veuillez remplir tous les champs !");
+            }
 
-    if(empty($email) || empty($password)){
-        die("Veuillez remplir tous les champs !");
-    }
+            $sql = "SELECT * FROM user WHERE email = :email";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(['email' => $email]);
+            
+            $user = $stmt->fetch();
 
-    $sql = "SELECT * FROM user WHERE email = :email";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch();
 
-    if($user && password_verify($password, $user['mdp'])){
-        $_SESSION['username'] = $user['nom_user'];
-        $_SESSION['user_id'] = $user['id_user'];
-        $_SESSION['role'] = $user['role'];
-        $_SESSION['first_name'] = $user['prenom'];
-        $_SESSION['last_name'] = $user['nom'];
+            if($user && password_verify($password, $user['mdp'])){
+            
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['first_name'] = $user['first_name'];
+                $_SESSION['last_name'] = $user['last_name'];
 
-        header("location: home.php");
-        exit;
-    } else {
-        die("Adresse email ou mot de passe incorrect !");
-    }
-}
-?>
+                header("location: home.php");
+            } else {
+                die("Adresse email ou mot de passe incorrect !");
+            }
+        }
+    ?>
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -42,8 +38,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
+    
     <?php include("link.php"); ?>
 </head>
+
+<?php include("navbar.php"); ?>
 <body class="bg-secondary">
 
 <div class="container-fluid login-container">
