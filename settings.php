@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Récupération de l'utilisateur
 $user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = :user_id");
+$stmt = $pdo->prepare("SELECT * FROM user WHERE id_user = :user_id");
 $stmt->execute(['user_id' => $user_id]);
 $user = $stmt->fetch();
 
@@ -19,7 +19,7 @@ if (!$user) die("Utilisateur introuvable.");
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     if ($_POST['new_password'] === $_POST['confirm_password']) {
         $hashed = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
-        $pdo->prepare("UPDATE users SET password = :password WHERE user_id = :user_id")
+        $pdo->prepare("UPDATE user SET password = :password WHERE user_id = :user_id")
             ->execute(['password' => $hashed, 'user_id' => $user_id]);
         $password_success = "Mot de passe mis à jour.";
     } else {
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 
 // Suppression de son propre compte
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_own_account'])) {
-    $pdo->prepare("DELETE FROM users WHERE user_id = :user_id")
+    $pdo->prepare("DELETE FROM user WHERE user_id = :user_id")
         ->execute(['user_id' => $user_id]);
     session_destroy();
     header("Location: login.php");
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_own_account'])
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account']) && $user['role'] === 'admin') {
     $target = $_POST['account_to_delete'];
     if ($target != $user_id) {
-        $pdo->prepare("DELETE FROM users WHERE user_id = :user_id")->execute(['user_id' => $target]);
+        $pdo->prepare("DELETE FROM user WHERE user_id = :user_id")->execute(['user_id' => $target]);
     }
 }
 
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_course']) && i
 
 // Données
 if ($user['role'] === 'admin') {
-    $users = $pdo->query("SELECT * FROM users WHERE user_id != $user_id")->fetchAll();
+    $users = $pdo->query("SELECT * FROM user WHERE user_id != $user_id")->fetchAll();
 }
 if (in_array($user['role'], ['admin', 'professor'])) {
     $modules = $pdo->query("SELECT * FROM modules")->fetchAll();
@@ -81,7 +81,6 @@ function getRoleName($role) {
 
     <!-- Message de bienvenue -->
     <div class="alert alert-info">
-        <h4>Bienvenue, <?= htmlspecialchars($user['username']) ?> !</h4>
         <p>Connecté en tant que <?= getRoleName($user['role']) ?>.</p>
     </div>
 
@@ -89,7 +88,6 @@ function getRoleName($role) {
     <div class="card mb-4">
         <div class="card-header"><h5>Informations du compte</h5></div>
         <div class="card-body">
-            <p><strong>Nom d'utilisateur :</strong> <?= htmlspecialchars($user['username']) ?></p>
             <p><strong>Email :</strong> <?= htmlspecialchars($user['email']) ?></p>
 
             <button class="btn btn-secondary mb-3" data-bs-toggle="collapse" data-bs-target="#changePasswordForm">Changer le mot de passe</button>
