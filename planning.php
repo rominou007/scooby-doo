@@ -3,71 +3,80 @@ session_start();
 require('db.php');
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header('Location: login.php');
     exit();
 }
 
-$current_user_id = $_SESSION['user_id'];
-$current_role = $_SESSION['role'];
-$target_user_id = ($current_role != 2) ? $current_user_id : null;
+$role = $_SESSION['role'];
+$user_id = $_SESSION['user_id'];
+$utilisateur_selectionne = $user_id;
 
-// Si admin : gestion des actions
-if ($current_role == 2 && isset($_GET['view_user']) && is_numeric($_GET['view_user'])) {
-    $target_user_id = intval($_GET['view_user']);
-}
-
-// Ajout d'un cours (admin seulement)
-if ($current_role == 2 && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_course'])) {
-    $module_id = intval($_POST['module_id']);
-    $user_id = intval($_POST['user_id']);
-    $start = $_POST['start_time'];
-    $end = $_POST['end_time'];
-
-    $stmt = $pdo->prepare("INSERT INTO plannings (user_id, module_id, start_time, end_time) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$user_id, $module_id, $start, $end]);
-}
-
-// Suppression d’un cours (admin seulement)
-if ($current_role == 2 && isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $stmt = $pdo->prepare("DELETE FROM plannings WHERE planning_id = ?");
-    $stmt->execute([$_GET['delete']]);
-    // Redirection pour éviter re-soumission
-    header("Location: planning.php?view_user=" . $_GET['view_user']);
-    exit();
-}
-
-// Récupération de la liste des utilisateurs (hors admins)
-$professeurs = $etudiants = [];
-if ($current_role == 2) {
-    $stmt = $pdo->query("SELECT id, username, role FROM users WHERE role != 2 ORDER BY username");
-    while ($row = $stmt->fetch()) {
-        ($row['role'] == 1) ? $professeurs[] = $row : $etudiants[] = $row;
+// Choix utilisateur si admin
+if ($role === 0) {
+    if (isset($_POST['utilisateur'])) {
+        $utilisateur_selectionne = intval($_POST['utilisateur']);
     }
+    $stmt = $pdo->query("SELECT user_id, first_name, last_name FROM users WHERE role IN (1, 2)");
+    $utilisateurs = $stmt->fetchAll();
+} else {
+    $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE user_id = :uid");
+    $stmt->execute(['uid' => $user_id]);
+    $utilisateur_info = $stmt->fetch();
 }
 
-// Récupération des modules
-$modules = $pdo->query("SELECT * FROM modules ORDER BY module_name")->fetchAll();
+// Définir la date de référence
+$current_date = $_GET['date'] ?? date('Y-m-d');
+$date = new DateTime($current_date);
 
-// Récupération du planning
+// Générer les 6 prochains jours sans les dimanches
+$jours_dates = [];
+$interval = new DateInterval('P1D');
+$dt = clone $date;
+while (count($jours_dates) < 6) {
+    if ($dt->format('w') != 0) { // Exclure les dimanches
+        $jours_dates[] = clone $dt;
+    }
+    $dt->add($interval);
+}
+
+// Dates pour navigation
+$prev_date = (clone $date)->sub(new DateInterval('P7D'))->format('Y-m-d');
+$next_date = (clone $date)->add(new DateInterval('P7D'))->format('Y-m-d');
+
+// Heures affichées
+$heures = [];
+for ($h = 8; $h <= 20; $h++) {
+    $heures[] = sprintf('%02d:00', $h);
+}
+
+// Récupération des cours
+$start_date = $jours_dates[0]->format('Y-m-d');
+$end_date = end($jours_dates)->format('Y-m-d');
+
+$stmt = $pdo->prepare("SELECT c.*, m.module_name, u.first_name, u.last_name 
+                       FROM courses c
+                       JOIN modules m ON c.module_id = m.module_id
+                       JOIN users u ON c.professor_id = u.user_id
+                       WHERE (c.professor_id = :uid OR EXISTS (
+                           SELECT 1 FROM cours_eleves ce WHERE ce.course_id = c.course_id AND ce.student_id = :uid))
+                       AND c.date_cours BETWEEN :start AND :end
+                       ORDER BY c.date_cours, c.heure_debut");
+$stmt->execute([
+    'uid' => $utilisateur_selectionne,
+    'start' => $start_date,
+    'end' => $end_date
+]);
+$cours = $stmt->fetchAll();
+
 $planning = [];
-if ($target_user_id !== null) {
-    $stmt = $pdo->prepare("
-        SELECT p.*, m.module_name 
-        FROM plannings p 
-        JOIN modules m ON p.module_id = m.module_id 
-        WHERE p.user_id = :uid
-    ");
-    $stmt->execute(['uid' => $target_user_id]);
-    $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($courses as $course) {
-        $day = date('N', strtotime($course['start_time']));
-        $hour = date('H:i', strtotime($course['start_time']));
-        $planning[$day][$hour][] = $course;
-    }
+foreach ($cours as $cours_info) {
+    $date = $cours_info['date_cours'];
+    $planning[$date][] = $cours_info;
 }
-?>
 
+// Tableau des jours en français
+$jours_fr = [1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -75,115 +84,117 @@ if ($target_user_id !== null) {
     <title>Planning</title>
     <?php include("link.php"); ?>
     <style>
-        table td, table th { text-align: center; vertical-align: middle; }
-        .horaire { width: 80px; background: #f8f9fa; font-weight: bold; }
+        table, th, td { border: 1px solid #ccc; border-collapse: collapse; }
+        th, td { padding: 0; text-align: left; vertical-align: top; position: relative; height: 60px; }
+        .course-block {
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: 2px;
+            padding: 4px;
+            border-radius: 4px;
+            background-color: #add8e6; /* Bleu clair */
+            border: 2px solid #00008b; /* Bleu foncé */
+            color: #000;
+            font-size: 0.8em;
+            overflow: hidden;
+        }
+        .delete-button {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            background: transparent;
+            border: none;
+            color: red;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .hour-label { width: 60px; text-align: right; padding-right: 5px; }
+        .planning-container { display: flex; }
+        .sidebar { margin-left: 20px; }
     </style>
 </head>
 <body>
 <?php include("navbar.php"); ?>
 
-<div class="container mt-5">
-    <h1 class="mb-4">Planning de la semaine</h1>
+<div class="container mt-5 d-flex">
+    <div style="flex-grow:1;">
+        <h1>Planning</h1>
 
-    <?php if ($current_role == 2): ?>
-        <div class="mb-4">
-            <h4>Voir l'emploi du temps de :</h4>
-            <form method="get" class="row g-3">
-                <div class="col-md-6">
-                    <label>Professeurs :</label>
-                    <select name="view_user" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Sélectionner --</option>
-                        <?php foreach ($professeurs as $prof): ?>
-                            <option value="<?= $prof['id'] ?>" <?= ($target_user_id === $prof['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($prof['username']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col-md-6">
-                    <label>Élèves :</label>
-                    <select name="view_user" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Sélectionner --</option>
-                        <?php foreach ($etudiants as $eleve): ?>
-                            <option value="<?= $eleve['id'] ?>" <?= ($target_user_id === $eleve['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($eleve['username']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+        <!-- Sélection utilisateur -->
+        <?php if ($role === 0): ?>
+            <form method="post" class="mb-3">
+                <label for="utilisateur">Afficher le planning de :</label>
+                <select name="utilisateur" id="utilisateur" onchange="this.form.submit()">
+                    <option value="">-- Choisir un utilisateur --</option>
+                    <?php foreach ($utilisateurs as $user): ?>
+                        <option value="<?= $user['user_id'] ?>" <?= ($utilisateur_selectionne == $user['user_id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </form>
-        </div>
-    <?php endif; ?>
+        <?php else: ?>
+            <p>Planning de <?= htmlspecialchars($utilisateur_info['first_name'] . ' ' . $utilisateur_info['last_name']) ?></p>
+        <?php endif; ?>
 
-    <?php if ($target_user_id !== null): ?>
+        <!-- Navigation -->
+        <div class="mb-3">
+            <a href="?date=<?= $prev_date ?>" class="btn btn-secondary">← Semaine précédente</a>
+            <a href="?date=<?= $next_date ?>" class="btn btn-secondary">Semaine suivante →</a>
+        </div>
+
+        <!-- Planning -->
         <table class="table table-bordered">
             <thead>
-                <tr>
-                    <th class="horaire">Heure</th>
-                    <?php
-                    $jours = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-                    foreach ($jours as $jour) {
-                        echo "<th>$jour</th>";
-                    }
-                    ?>
-                </tr>
+            <tr>
+                <th>Heure / Jour</th>
+                <?php foreach ($jours_dates as $dt): ?>
+                    <th><?= $jours_fr[$dt->format('N')] . ' ' . $dt->format('d/m') ?></th>
+                <?php endforeach; ?>
+            </tr>
             </thead>
             <tbody>
-                <?php for ($h = 8; $h <= 20; $h++): ?>
-                    <?php $heure = sprintf("%02d:00", $h); ?>
-                    <tr>
-                        <td class="horaire"><?= $heure ?></td>
-                        <?php for ($d = 1; $d <= 6; $d++): ?>
-                            <td>
-                                <?php if (!empty($planning[$d][$heure])): ?>
-                                    <?php foreach ($planning[$d][$heure] as $c): ?>
-                                        <div class="bg-primary text-white rounded p-1 mb-1">
-                                            <?= htmlspecialchars($c['module_name']) ?>
-                                            <?php if ($current_role == 2): ?>
-                                                <a href="?view_user=<?= $target_user_id ?>&delete=<?= $c['planning_id'] ?>" class="btn btn-sm btn-danger ms-2">✖</a>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </td>
-                        <?php endfor; ?>
-                    </tr>
-                <?php endfor; ?>
+            <?php foreach ($heures as $heure): ?>
+                <tr>
+                    <td class="hour-label"><?= $heure ?></td>
+                    <?php foreach ($jours_dates as $dt): 
+                        $date_str = $dt->format('Y-m-d');
+                        $timestamp_heure = strtotime($heure);
+                        $cours_jour = $planning[$date_str] ?? [];
+                    ?>
+                        <td>
+                            <?php foreach ($cours_jour as $cours_item): 
+                                $debut = strtotime($cours_item['heure_debut']);
+                                $fin = strtotime($cours_item['heure_fin']);
+                                if ($debut >= $timestamp_heure && $debut < $timestamp_heure + 3600): // cours dans cette heure
+                                    $top_percent = ((($debut % 3600) / 3600) * 100);
+                                    $height_percent = (($fin - $debut) / 3600) * 100;
+                            ?>
+                                <div class="course-block" style="top: <?= $top_percent ?>%; height: <?= $height_percent ?>%;">
+                                    <?php if ($role === 0): ?>
+                                        <form method="post" action="supprimer_cours.php" onsubmit="return confirm('Supprimer ce cours ?');" style="display:inline;">
+                                            <input type="hidden" name="id" value="<?= $cours_item['course_id'] ?>">
+                                            <button type="submit" class="delete-button" title="Supprimer le cours">×</button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <strong><?= htmlspecialchars($cours_item['title']) ?></strong><br>
+                                    <small><?= htmlspecialchars($cours_item['module_name']) ?></small><br>
+                                    <small><?= htmlspecialchars($cours_item['first_name'] . ' ' . $cours_item['last_name']) ?></small>
+                                </div>
+                            <?php endif; endforeach; ?>
+                        </td>
+                    <?php endforeach; ?>
+                </tr>
+            <?php endforeach; ?>
             </tbody>
         </table>
+    </div>
 
-        <?php if ($current_role == 2): ?>
-            <h4 class="mt-5">Ajouter un cours pour <?= $target_user_id ?></h4>
-            <form method="post" class="row g-3">
-                <input type="hidden" name="add_course" value="1">
-                <input type="hidden" name="user_id" value="<?= $target_user_id ?>">
-
-                <div class="col-md-4">
-                    <label>Module :</label>
-                    <select name="module_id" class="form-select" required>
-                        <?php foreach ($modules as $m): ?>
-                            <option value="<?= $m['module_id'] ?>"><?= htmlspecialchars($m['module_name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label>Début :</label>
-                    <input type="datetime-local" name="start_time" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label>Fin :</label>
-                    <input type="datetime-local" name="end_time" class="form-control" required>
-                </div>
-
-                <div class="col-12">
-                    <button class="btn btn-success" type="submit">Ajouter</button>
-                </div>
-            </form>
-        <?php endif; ?>
-    <?php elseif ($current_role == 2): ?>
-        <div class="alert alert-info">Sélectionnez un utilisateur pour voir et modifier son emploi du temps.</div>
-    <?php endif; ?>
+    <div class="sidebar">
+        <a href="ajouter_cours.php" class="btn btn-success mb-3">Ajouter un cours</a>
+    </div>
 </div>
 
 </body>
