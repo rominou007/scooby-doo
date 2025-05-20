@@ -1,7 +1,7 @@
 <?php
     require('db.php');
     session_start();
-    if (!isset($_SESSION['id_user'])) {
+    if (!isset($_SESSION['user_id'])) {
         header("Location: login.php");
         exit();
     }
@@ -10,7 +10,7 @@
     $stmt = $pdo->query("SELECT a.*, u.nom, u.prenom, 
                          (SELECT COUNT(*) FROM forum_commentaires WHERE article_id = a.article_id) AS nb_commentaires 
                          FROM forum_articles a 
-                         JOIN user u ON a.id_user = u.id_user 
+                         JOIN user u ON a.user_id = u.id_user 
                          ORDER BY a.date_creation DESC");
     $articles = $stmt->fetchAll();
 ?>

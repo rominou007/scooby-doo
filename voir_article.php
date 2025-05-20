@@ -14,9 +14,9 @@
     $article_id = (int)$_GET['id'];
     
     // Récupérer les informations de l'article
-    $stmt = $pdo->prepare("SELECT a.*, u.username, u.first_name, u.last_name 
+    $stmt = $pdo->prepare("SELECT a.*, u.prenom, u.nom 
                           FROM forum_articles a 
-                          JOIN users u ON a.user_id = u.user_id 
+                          JOIN user u ON a.user_id = u.id_user 
                           WHERE a.article_id = :article_id");
     $stmt->execute(['article_id' => $article_id]);
     $article = $stmt->fetch();
@@ -27,9 +27,9 @@
     }
     
     // Récupérer les commentaires
-    $stmt = $pdo->prepare("SELECT c.*, u.username, u.first_name, u.last_name 
+    $stmt = $pdo->prepare("SELECT c.*, u.prenom, u.nom 
                           FROM forum_commentaires c 
-                          JOIN users u ON c.user_id = u.user_id 
+                          JOIN user u ON c.user_id = u.id_user 
                           WHERE c.article_id = :article_id 
                           ORDER BY c.date_creation");
     $stmt->execute(['article_id' => $article_id]);
@@ -96,7 +96,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-3">
                     <div>
-                        <strong>Par <?= htmlspecialchars($article['first_name'] . ' ' . $article['last_name']) ?></strong>
+                        <strong>Par <?= htmlspecialchars($article['prenom'] . ' ' . $article['nom']) ?></strong>
                     </div>
                     <div>
                         <small class="text-muted">
@@ -119,7 +119,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <div>
-                                <strong><?= htmlspecialchars($commentaire['first_name'] . ' ' . $commentaire['last_name']) ?></strong>
+                                <strong><?= htmlspecialchars($commentaire['prenom'] . ' ' . $commentaire['nom']) ?></strong>
                             </div>
                             <div>
                                 <small class="text-muted">

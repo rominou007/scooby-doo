@@ -3,6 +3,12 @@ body{
     background: url('uploads/Fond.png') no-repeat center center fixed;
     background-size: cover;
 }
+h1 {
+    color: white !important; /* Violet foncé */
+}
+h3 {
+    color: white !important; /* Violet foncé */
+}
 .badge-notification {
     position: relative;
     top: -10px;
