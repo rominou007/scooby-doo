@@ -15,7 +15,7 @@ try {
     if ($user_role === 0) { // Étudiant
         // Récupérer la classe de l'étudiant
         $class_query = "
-            SELECT c.class_id, c.class_name, c.année_scolaire
+            SELECT c.class_id, c.class_name, c.annee_scolaire
             FROM classes c
             JOIN student_classes sc ON c.class_id = sc.class_id
             WHERE sc.student_id = ?
@@ -150,9 +150,9 @@ try {
                 <p class="text-muted">
                     <?php 
                     switch($_SESSION['role']) {
-                        case 0: echo "Espace étudiant"; break;
-                        case 1: echo "Espace professeur"; break;
-                        case 2: echo "Espace administrateur"; break;
+                        case 0: echo "<h3>Espace étudiant</h3>"; break;
+                        case 1: echo "<h3>Espace professeur</h3>"; break;
+                        case 2: echo "<h3>Espace administrateur</h3>"; break;
                     }
                     ?>
                 </p>
