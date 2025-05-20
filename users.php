@@ -49,7 +49,9 @@
             <td>
             <?php if ($user["role"] == 2): ?>
                 <span class="badge text-bg-danger">admin</span>
-            <?php else: ?>
+            <?php elseif ($user["role"] == 1): ?>
+                <span class="badge text-bg-success">professor</span>
+            <?php elseif ($user["role"] == 0): ?>
                 <span class="badge text-bg-primary">étudiant</span>
             <?php endif; ?>
             </td>
