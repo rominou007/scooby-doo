@@ -11,13 +11,14 @@ $role = $_SESSION['role'];
 $user_id = $_SESSION['user_id'];
 $utilisateur_selectionne = $user_id;
 
-// Choix utilisateur si admin (role=0)
-if ($role === 0) {
-    if (isset($_POST['utilisateur'])) {
+// Si c'est un admin (role = 2), il peut choisir un autre utilisateur
+if ((int)$role === 2) {
+    if (isset($_POST['utilisateur']) && is_numeric($_POST['utilisateur'])) {
         $utilisateur_selectionne = intval($_POST['utilisateur']);
     }
-    // Utilisateurs profs et étudiants
-    $stmt = $pdo->query("SELECT id_user, prenom, nom FROM user WHERE role IN (1, 2)");
+
+    // On récupère tous les utilisateurs (profs et étudiants)
+    $stmt = $pdo->query("SELECT id_user, prenom, nom FROM user WHERE role IN (0,1)");
     $utilisateurs = $stmt->fetchAll();
 } else {
     $stmt = $pdo->prepare("SELECT prenom, nom FROM user WHERE id_user = :uid");
@@ -34,7 +35,7 @@ $jours_dates = [];
 $interval = new DateInterval('P1D');
 $dt = clone $date;
 while (count($jours_dates) < 6) {
-    if ($dt->format('w') != 0) { // Exclure dimanches (0)
+    if ($dt->format('w') != 0) {
         $jours_dates[] = clone $dt;
     }
     $dt->add($interval);
@@ -48,11 +49,7 @@ for ($h = 8; $h <= 20; $h++) {
     $heures[] = sprintf('%02d:00', $h);
 }
 
-// Requête cours — On suppose qu’il existe une table `cours_eleves` ou `student_classes` pour les étudiants
-// Remarque: ta base a `student_classes` mais pas `cours_eleves`, il faudrait adapter la logique
-
-// Exemple avec `student_classes` et `cours` (on suppose un cours lié à un module, un module à une classe, et l’étudiant est dans la classe)
-
+// Requête des cours
 $stmt = $pdo->prepare("
     SELECT c.*, m.nom_module, u.prenom, u.nom
     FROM cours c
@@ -88,7 +85,7 @@ $jours_fr = [1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     <title>Planning</title>
     <?php include("link.php"); ?>
     <style>
-        /* mêmes styles que toi */
+        /* tes styles ici */
     </style>
 </head>
 <body>
@@ -98,7 +95,7 @@ $jours_fr = [1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     <div style="flex-grow:1;">
         <h1>Planning</h1>
 
-        <?php if ($role === 0): ?>
+        <?php if ((int)$role === 2): ?>
             <form method="post" class="mb-3">
                 <label for="utilisateur">Afficher le planning de :</label>
                 <select name="utilisateur" id="utilisateur" onchange="this.form.submit()">
@@ -146,7 +143,7 @@ $jours_fr = [1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
                                     $height_percent = (($fin - $debut) / 3600) * 100;
                                     ?>
                                     <div class="course-block" style="top: <?= $top_percent ?>%; height: <?= $height_percent ?>%;">
-                                        <?php if ($role === 0): ?>
+                                        <?php if ((int)$role === 2): ?>
                                             <form method="post" action="supprimer_cours.php" onsubmit="return confirm('Supprimer ce cours ?');" style="display:inline;">
                                                 <input type="hidden" name="id" value="<?= $cours_item['id_cours'] ?>">
                                                 <button type="submit" class="delete-button" title="Supprimer le cours">×</button>
@@ -167,7 +164,9 @@ $jours_fr = [1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     </div>
 
     <div class="sidebar">
-        <a href="ajouter_cours.php" class="btn btn-success mb-3">Ajouter un cours</a>
+        <?php if ((int)$role === 2): ?>
+            <a href="ajouter_cours.php" class="btn btn-success mb-3">Ajouter un cours</a>
+        <?php endif; ?>
     </div>
 </div>
 
