@@ -1,7 +1,7 @@
 -- Suppression et création de la base
-DROP DATABASE IF EXISTS nouvelle_base;
-CREATE DATABASE nouvelle_base CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE nouvelle_base;
+DROP DATABASE IF EXISTS student_five;
+CREATE DATABASE student_five CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE student_five;
 
 -- Suppression des tables existantes (ordre inverse des dépendances)
 DROP TABLE IF EXISTS `forum_commentaires`;
@@ -24,7 +24,7 @@ CREATE TABLE `user` (
   `email` varchar(100) NOT NULL UNIQUE,
   `prenom` varchar(50) DEFAULT NULL,
   `nom` varchar(50) DEFAULT NULL,
-  `role` int(11) NOT NULL,ou
+  `role` int(11) NOT NULL,
   `telephone` varchar(15) DEFAULT NULL,
   `adresse` text DEFAULT NULL,
   `sexe` varchar(10) NOT NULL,

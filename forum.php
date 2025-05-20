@@ -1,16 +1,16 @@
 <?php
     require('db.php');
     session_start();
-    if (!isset($_SESSION['user_id'])) {
+    if (!isset($_SESSION['id_user'])) {
         header("Location: login.php");
         exit();
     }
     
     // Récupérer tous les articles
-    $stmt = $pdo->query("SELECT a.*, u.username, u.first_name, u.last_name, 
+    $stmt = $pdo->query("SELECT a.*, u.nom, u.prenom, 
                          (SELECT COUNT(*) FROM forum_commentaires WHERE article_id = a.article_id) AS nb_commentaires 
                          FROM forum_articles a 
-                         JOIN users u ON a.user_id = u.user_id 
+                         JOIN user u ON a.id_user = u.id_user 
                          ORDER BY a.date_creation DESC");
     $articles = $stmt->fetchAll();
 ?>

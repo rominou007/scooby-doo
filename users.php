@@ -1,13 +1,14 @@
 <?php
     session_start();
     require("db.php");
-    if(!isset($_SESSION['id'])){
-        header("location: index.php");
-        return;
+    if(!isset($_SESSION['user_id'])){
+        header("location: home2.php");
+        exit;
     } elseif($_SESSION['role'] != 2){
         header("location: home.php");
+        exit;
     }
-    $listUsers = $pdo->query("SELECT * FROM users")->fetchAll();
+    $listUsers = $pdo->query("SELECT * FROM user")->fetchAll();
 
 
 ?>
@@ -32,6 +33,7 @@
             <th scope="col">#</th>
             <th scope="col">Mail</th>
             <th scope="col">Prenom</th>
+            <th scope="col">Nom</th>
             <th scope="col">Access</th>
             <th scope="col">Action</th>
           </tr>
@@ -40,33 +42,31 @@
 
         <?php foreach($listUsers as $user): ?>
           <tr>
-            <th scope="row"><?php echo $user["id"] ?></th>
-            <td><?php echo $user["mail"] ?></td>
-            <td><?php echo $user["username"] ?></td>
+            <th scope="row"><?php echo $user["id_user"] ?></th>
+            <td><?php echo $user["email"] ?></td>
+            <td><?php echo $user["prenom"] ?></td>
+            <td><?php echo $user["nom"] ?></td>
             <td>
-            <?php if ($user["access"] == 1): ?>
+            <?php if ($user["role"] == 2): ?>
                 <span class="badge text-bg-danger">admin</span>
             <?php else: ?>
-                <span class="badge text-bg-primary">user</span>
+                <span class="badge text-bg-primary">étudiant</span>
             <?php endif; ?>
             </td>
             <td>
-
-            
               <!-- Button trigger modal -->
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop<?php echo $user["id"]?>">
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop<?php echo $user["id_user"] ?>">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>
 
-              <a href="delete_user.php?id=<?php echo $user["id"]?>" class="btn btn-danger">
+              <a href="delete_user.php?id=<?php echo $user["id_user"] ?>" class="btn btn-danger">
                 <i class="fa-solid fa-trash"></i>
               </a>
             </td>
           </tr>
 
-
           <!-- Modal -->
-          <div class="modal fade" id="staticBackdrop<?php echo $user["id"]?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+          <div class="modal fade" id="staticBackdrop<?php echo $user["id_user"] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
@@ -76,17 +76,20 @@
                 <div class="modal-body">
                   <form action="edit_user.php" method="post">
 
-                  <input type="hidden" name="id" value="<?php echo $user["id"]?>">
+                  <input type="hidden" name="id_user" value="<?php echo $user["id_user"] ?>">
 
-                  <label for="username" class="form-label">Username</label>
-                  <input required type="text" class="form-control" id="username" name="username" value="<?php echo $user["username"]?>">
-                  <label for="username" class="form-label">Name</label>
-                  <input required type="text" class="form-control" id="name" name="name" value="<?php echo $user["name"]?>">
+                  <label for="prenom" class="form-label">Prénom</label>
+                  <input required type="text" class="form-control" id="prenom" name="prenom" value="<?php echo $user["prenom"] ?>">
+                  <label for="nom" class="form-label">Nom</label>
+                  <input required type="text" class="form-control" id="nom" name="nom" value="<?php echo $user["nom"] ?>">
+                  <label for="email" class="form-label">Mail</label>
+                  <input required type="email" class="form-control" id="email" name="email" value="<?php echo $user["email"] ?>">
 
-                  <label for="Access" class="form-label">Access</label>
-                  <select name="access" id="access" class="form-control">
-                      <option value="0" <?php if($user["access"] == 0) echo "selected"?>>User</option>
-                      <option value="1" <?php if($user["access"] == 1) echo "selected"?>>Admin</option>
+                  <label for="acces" class="form-label">Access</label>
+                  <select name="acces" id="acces" class="form-control">
+                      <option value="0" <?php if($user["role"] == 0) echo "selected"?>>étudiant</option>
+                      <option value="1" <?php if($user["role"] == 1) echo "selected"?>>Prof</option>
+                      <option value="2" <?php if($user["role"] == 2) echo "selected"?>>Admin</option>
                   </select>
                     
                 </div>
