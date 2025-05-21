@@ -349,30 +349,11 @@ function getRandomColor() {
         
         <?php if($_SESSION['role'] === 2): ?>
             <!-- Espace administrateur -->
-             <?php
+
 <section class="courses-section">
     <h2 class="section-title">Liste des Utilisateurs</h2>
     <div class="row">
-        <?php if(!empty($users)): ?>
-            <?php foreach (array_slice($users, 0, 3) as $user): ?>
-                <div class="col-md-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-info text-white">
-                            <?php echo $user['role'] == 0 ? 'Étudiant' : ($user['role'] == 1 ? 'Professeur' : 'Administrateur'); ?>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title"><?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?></h5>
-                            <p class="card-text">
-                                <i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user['email']); ?>
-                            </p>
-                            <div class="d-flex gap-2">
-                                <a href="#" class="btn btn-info btn-sm">Profil</a>
-                                <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+        
 
             <!-- Carte "Tous les utilisateurs" -->
             <div class="col-md-4">
@@ -446,25 +427,7 @@ function getRandomColor() {
                     <?php endif; ?>
                 </div>
             </section>
-            
-                <section class="courses-section">
-                    <h2 class="section-title">Planning</h2>
-                    <div class="row">
-                        <div class="col-md-4 mx-auto">
-                            <div class="card shadow-sm h-100 text-center">
-                                <div class="card-header bg-success text-white">
-                                    <i class="fas fa-calendar-alt fa-2x"></i>
-                                </div>
-                                <div class="card-body d-flex flex-column justify-content-center">
-                                    <h5 class="card-title mb-3">Accéder au planning</h5>
-                                    <p class="card-text">Consultez le planning général des cours et modules.</p>
-                                    <a href="planning.php" class="btn btn-success mt-auto">Voir le planning</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            
+                        
                 <?php endif; ?>
                 </div>
 
