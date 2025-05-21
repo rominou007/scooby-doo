@@ -98,12 +98,46 @@ CREATE TABLE `exercices` (
   `date_creation` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+-- Table des quiz
+CREATE TABLE `quiz` (
+  `id_quiz` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_module` bigint(20) UNSIGNED NOT NULL,
+  `id_prof` bigint(20) UNSIGNED DEFAULT NULL,
+  `titre` varchar(200) NOT NULL,
+  `questions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`questions`)),
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_quiz`),
+  FOREIGN KEY (`id_module`) REFERENCES `modules` (`id_module`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_prof`) REFERENCES `user` (`id_user`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Structure de la table `forum_articles`
---
+-- Table des documents
+CREATE TABLE `documents` (
+  `id_document` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_etudiant` bigint(20) UNSIGNED NOT NULL,
+  `type_document` varchar(50) NOT NULL,
+  `chemin_fichier` varchar(255) NOT NULL,
+  `date_televersement` timestamp NOT NULL DEFAULT current_timestamp(),
+  `id_cours` bigint(20) UNSIGNED DEFAULT NULL,-- ajout du lien avec le cours
+  PRIMARY KEY (`id_document`),
+  FOREIGN KEY (`id_etudiant`) REFERENCES `user` (`id_user`) ON DELETE CASCADE
+  --FOREIGN KEY (`id_cours`) REFERENCES `cours` (`id_cours`) ON DELETE SET NULL,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Table des notes
+CREATE TABLE `notes` (
+  `id_note` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_etudiant` bigint(20) UNSIGNED NOT NULL,
+  `id_module` bigint(20) UNSIGNED NOT NULL,
+  `note` decimal(5,2) NOT NULL,
+  `date_attribution` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_note`),
+  UNIQUE KEY `etudiant_module_unique` (`id_etudiant`, `id_module`),
+  FOREIGN KEY (`id_etudiant`) REFERENCES `user` (`id_user`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_module`) REFERENCES `modules` (`id_module`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Table des articles du forum
 CREATE TABLE `forum_articles` (
   `article_id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,

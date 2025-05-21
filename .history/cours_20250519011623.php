@@ -20,7 +20,7 @@ function isAuthorizedUploader($role) {
     return in_array($role, [1, 2], true); // 1 = prof, 2 = admin
 }
 
-$error = "";
+$success = $error = "";
 
 // Traitement du formulaire d'ajout de cours + document
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && isset($_SESSION['user_id']) && isAuthorizedUploader($_SESSION['role'])) {
@@ -37,28 +37,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
             'titre' => $titre,
             'contenu' => $contenu
         ]);
+        $success = "Cours ajouté avec succès.";
+        $id_cours = $pdo->lastInsertId();
 
         // 2. Ajout du document si un fichier est envoyé
         if (!empty($_FILES['document']['name'])) {
             $fileName = basename($_FILES['document']['name']);
             $targetPath = "uploads/" . uniqid() . "_" . $fileName;
             if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
-                // Ajout dans la table documents SANS id_cours
-                $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier, date_televersement) VALUES (:id_etudiant, :type_document, :chemin_fichier, NOW())");
+                // Ajout dans la table documents avec id_cours
+                $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier, date_televersement, id_cours) VALUES (:id_etudiant, :type_document, :chemin_fichier, NOW(), :id_cours)");
                 $stmt->execute([
                     'id_etudiant' => $id_prof,
                     'type_document' => 'cours_module_' . $id_module,
-                    'chemin_fichier' => $targetPath
+                    'chemin_fichier' => $targetPath,
+                    'id_cours' => $id_cours
                 ]);
+                $success .= " Document joint ajouté.";
             } else {
                 $error = "Erreur lors du téléversement du document.";
             }
-        }
-
-        // Redirection PRG pour éviter la duplication
-        if (empty($error)) {
-            header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=1");
-            exit();
         }
     } else {
         $error = "Veuillez remplir tous les champs obligatoires.";
@@ -70,8 +68,13 @@ $stmt = $pdo->prepare("SELECT * FROM cours WHERE id_module = :id_module ORDER BY
 $stmt->execute(['id_module' => $id_module]);
 $cours_list = $stmt->fetchAll();
 
-// Récupération des documents liés au module
-$stmt = $pdo->prepare("SELECT * FROM documents WHERE type_document = :type_document");
+// Récupération des documents liés au module avec le titre du cours
+$stmt = $pdo->prepare("
+    SELECT d.*, c.titre 
+    FROM documents d
+    LEFT JOIN cours c ON d.id_cours = c.id_cours
+    WHERE d.type_document = :type_document
+");
 $stmt->execute(['type_document' => 'cours_module_' . $id_module]);
 $documents = $stmt->fetchAll();
 ?>
@@ -90,8 +93,8 @@ $documents = $stmt->fetchAll();
     <h1><?= htmlspecialchars($module['nom_module']) ?></h1>
     <p><?= htmlspecialchars($module['description']) ?></p>
 
-    <?php if (!empty($_GET['success'])): ?>
-        <div class="alert alert-success">Cours ajouté avec succès.</div>
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
     <?php elseif ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
@@ -133,7 +136,7 @@ $documents = $stmt->fetchAll();
         <?php foreach ($documents as $doc): ?>
             <li>
                 <a href="<?= htmlspecialchars($doc['chemin_fichier']) ?>" target="_blank">
-                    <?= htmlspecialchars(basename($doc['chemin_fichier'])) ?>
+                    <?= htmlspecialchars($doc['titre'] ?? 'Document sans cours associé') ?>
                 </a>
                 <small class="text-muted">(Ajouté le <?= $doc['date_televersement'] ?>)</small>
             </li>
