@@ -427,15 +427,8 @@ function getRandomColor() {
                     <?php endif; ?>
                 </div>
             </section>
-                        
-                <?php endif; ?>
                 </div>
 
-    <footer class="mt-5 py-3 bg-dark text-white text-center">
-        <div class="container">
-            <p class="mb-0">&copy; <?php echo date('Y'); ?> StudentFive - Tous droits réservés</p>
-        </div>
-    </footer>
 
     <script>
         // Simple script pour la navigation du slider
