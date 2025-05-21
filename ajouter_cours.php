@@ -2,24 +2,24 @@
 session_start();
 require('db.php');
 
-// Vérifier que l'utilisateur est admin (role = 0)
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 0) {
-    header('Location: login.php');
+// Vérification stricte : seul un admin (role = 2) peut accéder
+if (!isset($_SESSION['role']) || (int)$_SESSION['role'] !== 2) {
+    header('Location: home.php');
     exit();
 }
 
-// Récupérer la liste des professeurs (role=1)
+// Récupérer les professeurs (role = 1)
 $stmt = $pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 1");
 $professeurs = $stmt->fetchAll();
 
-// Récupérer modules pour sélection
+// Récupérer les modules
 $stmt = $pdo->query("SELECT id_module, nom_module FROM modules");
 $modules = $stmt->fetchAll();
 
 $erreur = '';
 $succes = '';
 
-// Valeurs par défaut pour formulaire
+// Initialisation des champs
 $titre = '';
 $module_id = 0;
 $professeur_id = 0;
@@ -35,14 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $heure_debut = $_POST['heure_debut'] ?? '';
     $heure_fin = $_POST['heure_fin'] ?? '';
 
-    // Vérification des champs
+    // Validation
     if (!$titre || !$module_id || !$professeur_id || !$date_cours || !$heure_debut || !$heure_fin) {
         $erreur = "Veuillez remplir tous les champs.";
     } elseif ($heure_fin <= $heure_debut) {
         $erreur = "L'heure de fin doit être après l'heure de début.";
     } else {
-        // Insertion en base
-        $stmt = $pdo->prepare("INSERT INTO cours (id_module, id_prof, titre, contenu, date_creation, date_cours, heure_debut, heure_fin) VALUES (:module_id, :professeur_id, :titre, '', NOW(), :date_cours, :heure_debut, :heure_fin)");
+        // Insertion
+        $stmt = $pdo->prepare("INSERT INTO cours (id_module, id_prof, titre, contenu, date_creation, date_cours, heure_debut, heure_fin)
+                               VALUES (:module_id, :professeur_id, :titre, '', NOW(), :date_cours, :heure_debut, :heure_fin)");
         $stmt->execute([
             'module_id' => $module_id,
             'professeur_id' => $professeur_id,
@@ -53,13 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         $succes = "Cours ajouté avec succès.";
 
-        // Réinitialiser les valeurs après succès
-        $titre = '';
-        $module_id = 0;
-        $professeur_id = 0;
-        $date_cours = '';
-        $heure_debut = '';
-        $heure_fin = '';
+        // Réinitialisation
+        $titre = $date_cours = $heure_debut = $heure_fin = '';
+        $module_id = $professeur_id = 0;
     }
 }
 ?>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 20 mai 2025 à 17:46
+-- Généré le : mer. 21 mai 2025 à 10:10
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -31,10 +31,17 @@ CREATE TABLE `classes` (
   `class_id` bigint(20) UNSIGNED NOT NULL,
   `class_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
-  `année_scolaire` varchar  (20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`class_id`)
+  `annee_scolaire` varchar(20) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+    PRIMARY KEY (`class_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `classes`
+--
+
+INSERT INTO `classes` (`class_id`, `class_name`, `description`, `annee_scolaire`, `created_at`) VALUES
+(1, 'Nouvelle classe', 'description', '24/25', '2025-05-21 08:01:23');
 
 -- --------------------------------------------------------
 
@@ -53,6 +60,14 @@ CREATE TABLE `cours` (
   `heure_debut` time NOT NULL,
   `heure_fin` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `cours`
+--
+
+INSERT INTO `cours` (`id_cours`, `id_module`, `id_prof`, `titre`, `contenu`, `date_creation`, `date_cours`, `heure_debut`, `heure_fin`) VALUES
+(1, 1, 2, 'Titre', '', '2025-05-20 16:32:50', '2025-05-22', '09:30:00', '12:30:00'),
+(2, 1, 2, 'test eleve@gmail', '', '2025-05-21 08:06:34', '2025-05-22', '11:00:00', '12:00:00');
 
 -- --------------------------------------------------------
 
@@ -97,6 +112,13 @@ CREATE TABLE `forum_articles` (
   `date_creation` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `forum_articles`
+--
+
+INSERT INTO `forum_articles` (`article_id`, `user_id`, `titre`, `contenu`, `date_creation`) VALUES
+(1, 2, 'Test', 'testons', '2025-05-21 07:41:48');
+
 -- --------------------------------------------------------
 
 --
@@ -125,6 +147,13 @@ CREATE TABLE `modules` (
   `description` text DEFAULT NULL,
   `date_creation` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `modules`
+--
+
+INSERT INTO `modules` (`id_module`, `class_id`, `code_module`, `nom_module`, `description`, `date_creation`) VALUES
+(1, NULL, 'code', 'nom', 'description', '2025-05-20 16:15:50');
 
 -- --------------------------------------------------------
 
@@ -180,6 +209,13 @@ CREATE TABLE `student_classes` (
   `date-creation` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `student_classes`
+--
+
+INSERT INTO `student_classes` (`id`, `student_id`, `class_id`, `date-creation`) VALUES
+(1, 3, 1, '2025-05-21 08:01:23');
+
 -- --------------------------------------------------------
 
 --
@@ -198,6 +234,15 @@ CREATE TABLE `user` (
   `sexe` varchar(10) NOT NULL,
   `date_creation` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `user`
+--
+
+INSERT INTO `user` (`id_user`, `mdp`, `email`, `prenom`, `nom`, `role`, `telephone`, `adresse`, `sexe`, `date_creation`) VALUES
+(1, '$2y$10$Oo6QlMrIRTfOrO1CNf.8G.gyxwUG65ankneRb4vsxkQ/7P0M7uWmS', 'admin@gmail.com', 'Admin', 'Antoine', 2, '0606060606', 'zaefegrnh', '', '2025-05-20 16:13:32'),
+(2, '$2y$10$DuGjsuKy3arhGUNrt1xIVO.PnwO61FU7/dPh7o70a1Psg.UJ2m2PK', 'prof@gmail.com', 'Prof', 'Antoine', 1, '0606060606', 'ztrgnht', '', '2025-05-20 16:31:55'),
+(3, '$2y$10$IVE58TBlMwi0uzl5oGBjIe2bE3Ej3YdI4z5nrfflWqLZbKt5XIsGy', 'eleve@gmail.com', 'Eleve', 'Antoine', 0, '0606060606', 'adresse', '', '2025-05-21 08:01:23');
 
 --
 -- Index pour les tables déchargées
@@ -302,13 +347,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT pour la table `classes`
 --
 ALTER TABLE `classes`
-  MODIFY `class_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `class_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `cours`
 --
 ALTER TABLE `cours`
-  MODIFY `id_cours` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_cours` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `documents`
@@ -326,7 +371,7 @@ ALTER TABLE `exercices`
 -- AUTO_INCREMENT pour la table `forum_articles`
 --
 ALTER TABLE `forum_articles`
-  MODIFY `article_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `article_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `forum_commentaires`
@@ -338,7 +383,7 @@ ALTER TABLE `forum_commentaires`
 -- AUTO_INCREMENT pour la table `modules`
 --
 ALTER TABLE `modules`
-  MODIFY `id_module` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_module` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `notes`
@@ -362,13 +407,13 @@ ALTER TABLE `quiz`
 -- AUTO_INCREMENT pour la table `student_classes`
 --
 ALTER TABLE `student_classes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_user` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Contraintes pour les tables déchargées

@@ -19,8 +19,8 @@ if (!$user) die("Utilisateur introuvable.");
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     if ($_POST['new_password'] === $_POST['confirm_password']) {
         $hashed = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
-        $pdo->prepare("UPDATE user SET password = :password WHERE user_id = :user_id")
-            ->execute(['password' => $hashed, 'user_id' => $user_id]);
+        $pdo->prepare("UPDATE user SET mdp = :password WHERE id_user = :id_user")
+            ->execute(['password' => $hashed, 'id_user' => $user_id]);
         $password_success = "Mot de passe mis à jour.";
     } else {
         $password_error = "Les mots de passe ne correspondent pas.";
