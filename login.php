@@ -4,7 +4,7 @@ require("db.php");
 
 // Redirige si déjà connecté
 if (isset($_SESSION['user_id'])) {
-    header("Location: home.php");
+    header("Location: home2.php");
     exit;
 }
 

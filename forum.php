@@ -7,10 +7,10 @@
     }
     
     // Récupérer tous les articles
-    $stmt = $pdo->query("SELECT a.*, u.username, u.first_name, u.last_name, 
-                         (SELECT COUNT(*) FROM forum_commentaires WHERE article_id = a.article_id) AS nb_commentaires 
+$stmt = $pdo->query("SELECT a.*, a.user_id as id_user, u.nom, u.prenom, 
+                        (SELECT COUNT(*) FROM forum_commentaires WHERE article_id = a.article_id) AS nb_commentaires 
                          FROM forum_articles a 
-                         JOIN users u ON a.user_id = u.user_id 
+                         JOIN user u ON a.user_id = u.id_user 
                          ORDER BY a.date_creation DESC");
     $articles = $stmt->fetchAll();
 ?>
@@ -42,14 +42,24 @@
                         <?php if (count($articles) > 0): ?>
                             <div class="list-group">
                                 <?php foreach ($articles as $article): ?>
-                                    <a href="voir_article.php?id=<?= $article['article_id'] ?>" class="list-group-item list-group-item-action">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h5 class="mb-1"><?= htmlspecialchars($article['titre']) ?></h5>
-                                            <small><?= $article['nb_commentaires'] ?> réponses</small>
-                                        </div>
-                                        <p class="mb-1"><?= substr(htmlspecialchars($article['contenu']), 0, 150) ?>...</p>
-                                        <small>Par <?= htmlspecialchars($article['first_name'] . ' ' . $article['last_name']) ?> - <?= date('d/m/Y H:i', strtotime($article['date_creation'])) ?></small>
-                                    </a>
+                                    <div class="list-group-item">
+                                        <a href="voir_article.php?id=<?= $article['article_id'] ?>" class="text-decoration-none">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1"><?= htmlspecialchars($article['titre']) ?></h5>
+                                                <small><?= $article['nb_commentaires'] ?> réponses</small>
+                                            </div>
+                                            <p class="mb-1"><?= substr(htmlspecialchars($article['contenu']), 0, 150) ?>...</p>
+                                            <small>Par <?= htmlspecialchars($article['prenom'] . ' ' . $article['nom']) ?> - <?= date('d/m/Y H:i', strtotime($article['date_creation'])) ?></small>
+                                        </a>
+                                        
+                                        <?php if ($article['id_user'] != $_SESSION['user_id']): ?>
+                                            <div class="mt-2">
+                                                <a href="creer_conversation.php?receveur_id=<?= $article['id_user'] ?>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-envelope me-1"></i> Contacter l'auteur
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php endforeach; ?>
                             </div>
                         <?php else: ?>
