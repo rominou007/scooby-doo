@@ -45,12 +45,8 @@ $unread_messages = 0;
                 <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
                 <li class="nav-item"><a class="nav-link py-1" href="settings.php"><i class="fas fa-cogs"></i> Paramètres</a></li>
 
-                <?php elseif (isset($user_role) && $user_role === 3): ?>
-                <!-- Personnel -->
-                <li class="nav-item"><a class="nav-link py-1" href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Tableau</a></li>
-                <li class="nav-item"><a class="nav-link" href="students.php"><i class="fas fa-user-graduate"></i> Étudiants</a></li>
-                <li class="nav-item"><a class="nav-link py-1" href="documents.php"><i class="fas fa-file-alt"></i> Docs</a></li>
-                <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
+ 
+                
                 <?php endif; ?>
             </ul>
 

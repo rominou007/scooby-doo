@@ -315,7 +315,7 @@ function getRandomColor() {
                                         <p class="card-text">
                                             <small class="text-muted">Créé le: <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
                                         </p>
-                                        <a href="#" class="btn btn-warning btn-sm">Démarrer l'exercice</a>
+                                        <a href="" class="btn btn-warning btn-sm">Démarrer l'exercice</a>
                                     </div>
                                 </div>
                             </div>
