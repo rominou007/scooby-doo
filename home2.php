@@ -149,8 +149,8 @@ function getRandomColor() {
 <body class="bg-light">
     <?php include("navbar.php"); ?>
 
-    <div class="container mt-4">
-        <div class="row mb-3">
+    <div class="container mt-2">
+        <div class="row mb-2">
             <div class="col">
                 <h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></h1>
                 <p class="text-muted">
