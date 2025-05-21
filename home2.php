@@ -1,4 +1,4 @@
-<?php
+ <?php
 session_start();
 require_once 'db.php'; // Assurez-vous que ce fichier contient la connexion appropriée
 
@@ -130,6 +130,12 @@ try {
     error_log("Erreur : " . $e->getMessage());
     die($e->getMessage());
 }
+
+// Génération de couleurs aléatoires pour les cartes
+function getRandomColor() {
+    $colors = ['primary', 'success', 'danger', 'warning', 'info', 'secondary'];
+    return $colors[array_rand($colors)];
+}
 ?>
 
 <!DOCTYPE html>
@@ -139,6 +145,59 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord</title>
     <?php include("link.php"); ?>
+    <style>
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .module-card {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .module-card .card-img-top {
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+        }
+        .courses-section {
+            padding: 30px 0;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card-header {
+            font-weight: bold;
+        }
+        .slider-container {
+            position: relative;
+        }
+        .slider-navigation {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .slider-navigation .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .slider-navigation .dot.active {
+            background-color: #007bff;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <?php include("navbar.php"); ?>
@@ -159,222 +218,310 @@ try {
             </div>
         </div>
 
-        <div class="row">
-            <?php if ($user_role === 0): ?>
-                <!-- Section : Modules -->
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">Mes Modules</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php if (!empty($modules)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($modules as $module): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($module['code_module']); ?> - <?php echo htmlspecialchars($module['nom_module']); ?></strong>
-                                            <br>
-                                            <small class="text-muted">Professeur : <?php echo htmlspecialchars($module['professor_name']); ?></small>
-                                            <br>
-                                            <small class="text-muted"><?php echo htmlspecialchars($module['description']); ?></small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun module trouvé.</p>
-                            <?php endif; ?>
-                        </div>
+        <?php if($_SESSION['role'] === 0): ?>
+            <!-- Espace étudiant -->
+            <section class="courses-section">
+                <h2 class="section-title">COURSES LAST SEEN</h2>
+                <div class="slider-container">
+                    <div class="row">
+                        <?php if (!empty($modules)): ?>
+                            <?php foreach($modules as $index => $module): ?>
+                                <?php 
+                                    $color = getRandomColor();
+                                    // Affiche seulement les 3 premiers modules
+                                    if ($index > 2) continue;
+                                ?>
+                                <div class="col-md-4">
+                                    <div class="card module-card shadow">
+                                        <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
+                                        <div class="card-body">
+                                            <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
+                                            <p class="card-text">
+                                                <small class="text-muted">Professeur: <?php echo htmlspecialchars($module['professor_name']); ?></small>
+                                            </p>
+                                            <p class="card-text"><?php echo htmlspecialchars(substr($module['description'], 0, 100) . '...'); ?></p>
+                                            <a href="#" class="btn btn-primary btn-sm">Voir le cours</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    Aucun module trouvé pour le moment.
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="slider-navigation">
+                        <?php 
+                            $total_pages = ceil(count($modules) / 3);
+                            for ($i = 0; $i < $total_pages; $i++):
+                        ?>
+                            <span class="dot <?php echo $i === 0 ? 'active' : ''; ?>"></span>
+                        <?php endfor; ?>
                     </div>
                 </div>
+            </section>
 
-                <!-- Section : Notes récentes -->
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="card-title mb-0">Mes Notes Récentes</h5>
+            <!-- Notes récentes -->
+            <section class="courses-section">
+                <h2 class="section-title">Mes notes récentes</h2>
+                <div class="row">
+                    <?php if(!empty($recent_grades)): ?>
+                        <?php foreach($recent_grades as $grade): ?>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header <?php echo $grade['note'] >= 10 ? 'bg-success' : 'bg-danger'; ?> text-white">
+                                        <?php echo htmlspecialchars($grade['nom_module']); ?>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title text-center display-4">
+                                            <?php echo number_format($grade['note'], 2); ?>/20
+                                        </h5>
+                                        <p class="card-text text-center text-muted">
+                                            Note attribuée le <?php echo date('d/m/Y', strtotime($grade['date_attribution'])); ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucune note disponible pour le moment.
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <?php if (!empty($recent_grades)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($recent_grades as $grade): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($grade['nom_module']); ?></strong>
-                                            <br>
-                                            <span class="badge <?php echo $grade['note'] >= 10 ? 'bg-success' : 'bg-danger'; ?>">
-                                                <?php echo number_format($grade['note'], 2); ?>/20
-                                            </span>
-                                            <small class="text-muted ml-2">
-                                                Le <?php echo date('d/m/Y', strtotime($grade['date_attribution'])); ?>
-                                            </small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucune note disponible.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
+            </section>
 
-                <!-- Section : Exercices récents -->
-                <div class="col-md-12 mt-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-warning text-white">
-                            <h5 class="card-title mb-0">Exercices Récents</h5>
+            <!-- Exercices récents -->
+            <section class="courses-section">
+                <h2 class="section-title">Exercices récents</h2>
+                <div class="row">
+                    <?php if (!empty($recent_exercises)): ?>
+                        <?php foreach ($recent_exercises as $exercise): ?>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-warning text-white">
+                                        Exercice
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($exercise['titre']); ?></h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-primary"><?php echo htmlspecialchars($exercise['nom_module']); ?></span>
+                                        </p>
+                                        <p class="card-text">
+                                            <small class="text-muted">Créé le: <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
+                                        </p>
+                                        <a href="#" class="btn btn-warning btn-sm">Démarrer l'exercice</a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun exercice récent trouvé.
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <?php if (!empty($recent_exercises)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($recent_exercises as $exercise): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($exercise['titre']); ?></strong>
-                                            <br>
-                                            <small class="text-muted">Module : <?php echo htmlspecialchars($exercise['nom_module']); ?></small>
-                                            <br>
-                                            <small class="text-muted">Créé le : <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun exercice récent trouvé.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+            </section>
+        <?php endif; ?>
+        
+        <?php if($_SESSION['role'] === 1): ?>
+            <!-- Espace professeur -->
+            <section class="courses-section">
+                <h2 class="section-title">Modules enseignés</h2>
+                <div class="row">
+                    <?php if(!empty($modules)): ?>
+                        <?php foreach ($modules as $module): ?>
+                            <?php $color = getRandomColor(); ?>
+                            <div class="col-md-4">
+                                <div class="card module-card shadow mb-4">
+                                    <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
+                                        <p class="card-text"><?php echo htmlspecialchars(substr($module['description'], 0, 100) . '...'); ?></p>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" class="btn btn-primary btn-sm">Gérer</a>
+                                            <a href="#" class="btn btn-outline-secondary btn-sm">Voir les étudiants</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun module trouvé.
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+
+            <!-- Devoirs récents -->
+            <section class="courses-section">
+                <h2 class="section-title">Devoirs récents</h2>
+                <div class="row">
+                    <?php if(!empty($recent_exercises)): ?>
+                        <?php foreach ($recent_exercises as $exercise): ?>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-warning text-white">
+                                        Exercice
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($exercise['titre']); ?></h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-primary"><?php echo htmlspecialchars($exercise['nom_module']); ?></span>
+                                        </p>
+                                        <p class="card-text">
+                                            <small class="text-muted">Créé le: <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" class="btn btn-warning btn-sm">Voir les soumissions</a>
+                                            <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun devoir récent trouvé.
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+        <?php endif; ?>
+        
+        <?php if($_SESSION['role'] === 2): ?>
+            <!-- Espace administrateur -->
+            <section class="courses-section">
+                <h2 class="section-title">Liste des Utilisateurs</h2>
+                <div class="row">
+                    <?php if(!empty($users)): ?>
+                        <?php foreach (array_slice($users, 0, 3) as $user): ?>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <?php echo $user['role'] == 0 ? 'Étudiant' : ($user['role'] == 1 ? 'Professeur' : 'Administrateur'); ?>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?></h5>
+                                        <p class="card-text">
+                                            <i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user['email']); ?>
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" class="btn btn-info btn-sm">Profil</a>
+                                            <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        
+                        <?php if (count($users) > 3): ?>
+                            <div class="col-12 mt-3 text-center">
+                                <a href="#" class="btn btn-outline-primary">Voir tous les utilisateurs (<?php echo count($users); ?>)</a>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun utilisateur trouvé.
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
             
-            <?php if ($user_role === 1): ?>
-                <!-- Section : Modules enseignés -->
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">Modules Enseignés</h5>
+            <!-- Modules -->
+            <section class="courses-section">
+                <h2 class="section-title">Liste des Modules</h2>
+                <div class="row">
+                    <?php if(!empty($modules)): ?>
+                        <?php foreach(array_slice($modules, 0, 3) as $module): ?>
+                            <?php $color = getRandomColor(); ?>
+                            <div class="col-md-4">
+                                <div class="card module-card shadow">
+                                    <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
+                                        <p class="card-text"><?php echo htmlspecialchars(substr($module['description'], 0, 100) . '...'); ?></p>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" class="btn btn-primary btn-sm">Gérer</a>
+                                            <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        
+                        <?php if (count($modules) > 3): ?>
+                            <div class="col-12 mt-3 text-center">
+                                <a href="#" class="btn btn-outline-primary">Voir tous les modules (<?php echo count($modules); ?>)</a>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun module trouvé.
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <?php if (!empty($modules)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($modules as $module): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($module['code_module']); ?> - <?php echo htmlspecialchars($module['nom_module']); ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo htmlspecialchars($module['description']); ?></small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun module trouvé.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
-
-                <!-- Section : Devoirs récents -->
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-warning text-white">
-                            <h5 class="card-title mb-0">Devoirs Récents</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php if (!empty($recent_exercises)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($recent_exercises as $exercise): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($exercise['titre']); ?></strong>
-                                            <br>
-                                            <small class="text-muted">Module : <?php echo htmlspecialchars($exercise['nom_module']); ?></small>
-                                            <br>
-                                            <small class="text-muted">Créé le : <?php echo date('d/m/Y', strtotime($exercise['date_creation'])); ?></small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun devoir récent trouvé.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
+            </section>
             
-            <?php if ($user_role === 2): ?>
-                <!-- Section : Utilisateurs -->
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="card-title mb-0">Liste des Utilisateurs</h5>
+            <!-- Cours -->
+            <section class="courses-section">
+                <h2 class="section-title">Liste des Cours</h2>
+                <div class="row">
+                    <?php if(!empty($courses)): ?>
+                        <?php foreach(array_slice($courses, 0, 3) as $course): ?>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-success text-white">
+                                        Cours
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($course['titre']); ?></h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-primary"><?php echo htmlspecialchars($course['nom_module']); ?></span>
+                                        </p>
+                                        <p class="card-text">
+                                            <small class="text-muted">Créé le: <?php echo date('d/m/Y', strtotime($course['date_creation'])); ?></small>
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" class="btn btn-success btn-sm">Voir</a>
+                                            <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        
+                        <?php if (count($courses) > 3): ?>
+                            <div class="col-12 mt-3 text-center">
+                                <a href="#" class="btn btn-outline-primary">Voir tous les cours (<?php echo count($courses); ?>)</a>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun cours trouvé.
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <?php if (!empty($users)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($users as $user): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?></strong>
-                                            <br>
-                                            <small class="text-muted">Email : <?php echo htmlspecialchars($user['email']); ?></small>
-                                            <br>
-                                            <small class="text-muted">Rôle : 
-                                                <?php echo $user['role'] == 0 ? 'Étudiant' : ($user['role'] == 1 ? 'Professeur' : 'Administrateur'); ?>
-                                            </small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun utilisateur trouvé.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
-                
-                <!-- Section : Modules -->
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">Liste des Modules</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php if (!empty($modules)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($modules as $module): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($module['code_module']); ?> - <?php echo htmlspecialchars($module['nom_module']); ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo htmlspecialchars($module['description']); ?></small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun module trouvé.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Section : Cours -->
-                <div class="col-md-12 mt-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="card-title mb-0">Liste des Cours</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php if (!empty($courses)): ?>
-                                <ul class="list-unstyled">
-                                    <?php foreach ($courses as $course): ?>
-                                        <li class="mb-2">
-                                            <strong><?php echo htmlspecialchars($course['titre']); ?></strong>
-                                            <br>
-                                            <small class="text-muted">Module : <?php echo htmlspecialchars($course['nom_module']); ?></small>
-                                            <br>
-                                            <small class="text-muted">Créé le : <?php echo date('d/m/Y', strtotime($course['date_creation'])); ?></small>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="text-muted">Aucun cours trouvé.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
-        </div>
+            </section>
+        <?php endif; ?>
     </div>
 
     <footer class="mt-5 py-3 bg-dark text-white text-center">
@@ -382,5 +529,23 @@ try {
             <p class="mb-0">&copy; <?php echo date('Y'); ?> StudentFive - Tous droits réservés</p>
         </div>
     </footer>
+
+    <script>
+        // Simple script pour la navigation du slider
+        document.addEventListener('DOMContentLoaded', function() {
+            const dots = document.querySelectorAll('.slider-navigation .dot');
+            
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', function() {
+                    // Logique pour naviguer entre les pages du slider
+                    dots.forEach(d => d.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Ici, vous pourriez ajouter la logique pour afficher les différentes pages
+                    // Par exemple, avec AJAX ou en masquant/affichant des éléments
+                });
+            });
+        });
+    </script>
 </body>
 </html>
