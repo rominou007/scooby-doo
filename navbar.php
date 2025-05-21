@@ -64,9 +64,7 @@ if ($user_id) {
                 <li class="nav-item"><a class="nav-link py-1" href="users.php"><i class="fas fa-users-cog"></i> Utilisateurs</a></li>
                 <li class="nav-item"><a class="nav-link py-1" href="classes.php"><i class="fas fa-user-graduate"></i> Classes</a></li>
                 <li class="nav-item"><a class="nav-link py-1" href="modules.php"><i class="fas fa-book"></i> Modules</a></li>
-                <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
-                <li class="nav-item"><a class="nav-link py-1" href="settings.php"><i class="fas fa-cogs"></i> Paramètres</a></li>
-
+                 
             </ul>
             <?php endif; ?>
 
