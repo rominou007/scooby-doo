@@ -1,4 +1,4 @@
- <?php
+<?php
 session_start();
 require_once 'db.php'; // Assurez-vous que ce fichier contient la connexion appropriée
 
@@ -145,59 +145,6 @@ function getRandomColor() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord</title>
     <?php include("link.php"); ?>
-    <style>
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 20px;
-            height: 100%;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        .module-card {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .module-card .card-img-top {
-            height: 120px;
-            background-size: cover;
-            background-position: center;
-        }
-        .courses-section {
-            padding: 30px 0;
-        }
-        .section-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        .card-header {
-            font-weight: bold;
-        }
-        .slider-container {
-            position: relative;
-        }
-        .slider-navigation {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .slider-navigation .dot {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #ccc;
-            margin: 0 5px;
-            cursor: pointer;
-        }
-        .slider-navigation .dot.active {
-            background-color: #007bff;
-        }
-    </style>
 </head>
 <body class="bg-light">
     <?php include("navbar.php"); ?>
@@ -233,7 +180,7 @@ function getRandomColor() {
                                 ?>
                                 <div class="col-md-4">
                                     <div class="card module-card shadow">
-                                        <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
+                                        <div class="card-img-top" style="height: 120px; background: url('uploads/Fond.png') center/cover no-repeat;"></div>
                                         <div class="card-body">
                                             <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
                                             <p class="card-text">
@@ -341,7 +288,7 @@ function getRandomColor() {
                             <?php $color = getRandomColor(); ?>
                             <div class="col-md-4">
                                 <div class="card module-card shadow mb-4">
-                                    <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
+                                        <div class="card-img-top" style="height: 120px; background: url('uploads/Fond.png') center/cover no-repeat;"></div>
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
                                         <div class="d-flex gap-2">
@@ -450,7 +397,7 @@ function getRandomColor() {
                             <?php $color = getRandomColor(); ?>
                             <div class="col-md-4">
                                 <div class="card module-card shadow">
-                                    <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
+                                        <div class="card-img-top" style="height: 120px; background: url('uploads/Fond.png') center/cover no-repeat;"></div>
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
                                         <div class="d-flex gap-2">
@@ -477,7 +424,6 @@ function getRandomColor() {
                 </div>
             </section>
             
-           L/ planing 
                 <section class="courses-section">
                     <h2 class="section-title">Planning</h2>
                     <div class="row">
