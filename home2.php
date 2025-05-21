@@ -479,50 +479,27 @@ function getRandomColor() {
                 </div>
             </section>
             
-            <!-- Cours -->
-            <section class="courses-section">
-                <h2 class="section-title">Liste des Cours</h2>
-                <div class="row">
-                    <?php if(!empty($courses)): ?>
-                        <?php foreach(array_slice($courses, 0, 3) as $course): ?>
-                            <div class="col-md-4">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-header bg-success text-white">
-                                        Cours
-                                    </div>
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?php echo htmlspecialchars($course['titre']); ?></h5>
-                                        <p class="card-text">
-                                            <span class="badge bg-primary"><?php echo htmlspecialchars($course['nom_module']); ?></span>
-                                        </p>
-                                        <p class="card-text">
-                                            <small class="text-muted">Créé le: <?php echo date('d/m/Y', strtotime($course['date_creation'])); ?></small>
-                                        </p>
-                                        <div class="d-flex gap-2">
-                                            <a href="#" class="btn btn-success btn-sm">Voir</a>
-                                            <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
-                                        </div>
-                                    </div>
+           L/ planing 
+                <section class="courses-section">
+                    <h2 class="section-title">Planning</h2>
+                    <div class="row">
+                        <div class="col-md-4 mx-auto">
+                            <div class="card shadow-sm h-100 text-center">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-calendar-alt fa-2x"></i>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-center">
+                                    <h5 class="card-title mb-3">Accéder au planning</h5>
+                                    <p class="card-text">Consultez le planning général des cours et modules.</p>
+                                    <a href="planning.php" class="btn btn-success mt-auto">Voir le planning</a>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                        
-                        <?php if (count($courses) > 3): ?>
-                            <div class="col-12 mt-3 text-center">
-                                <a href="#" class="btn btn-outline-primary">Voir tous les cours (<?php echo count($courses); ?>)</a>
-                            </div>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                Aucun cours trouvé.
-                            </div>
                         </div>
-                    <?php endif; ?>
+                    </div>
+                </section>
+            
+                <?php endif; ?>
                 </div>
-            </section>
-        <?php endif; ?>
-    </div>
 
     <footer class="mt-5 py-3 bg-dark text-white text-center">
         <div class="container">
