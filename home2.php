@@ -30,7 +30,7 @@ try {
 
         // Récupérer les modules de la classe
         $modules_query = "
-            SELECT m.id_module, m.code_module, m.nom_module, m.description,
+            SELECT m.id_module, m.code_module, m.nom_module,
                    CONCAT(u.prenom, ' ', u.nom) AS professor_name
             FROM modules m
             JOIN profs_modules pm ON m.id_module = pm.id_module
@@ -239,8 +239,8 @@ function getRandomColor() {
                                             <p class="card-text">
                                                 <small class="text-muted">Professeur: <?php echo htmlspecialchars($module['professor_name']); ?></small>
                                             </p>
-                                            <p class="card-text"><?php echo htmlspecialchars(substr($module['description'], 0, 100) . '...'); ?></p>
-                                            <a href="#" class="btn btn-primary btn-sm">Voir le cours</a>
+                                            
+                                            <a href="cours.php?module_id=<?=$module['id_module'] ?>" class="btn btn-primary btn-sm">Voir le cours</a>
                                         </div>
                                     </div>
                                 </div>
