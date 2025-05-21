@@ -7,7 +7,29 @@ $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['role'] ?? null;
 $user_name = isset($_SESSION['first_name']) ? $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] : 'Invité';
 
+// Initialisation du compteur de messages non lus
 $unread_messages = 0;
+
+// Si l'utilisateur est connecté, compter les messages non lus
+if ($user_id) {
+    require_once('db.php');
+    
+    try {
+        // Requête pour compter tous les messages non lus destinés à l'utilisateur connecté
+        $stmt = $pdo->prepare("SELECT COUNT(*) as count 
+                              FROM messages m 
+                              JOIN conversations c ON m.conversation_id = c.conversation_id 
+                              WHERE (c.user1_id = :user_id OR c.user2_id = :user_id) 
+                              AND m.sender_id != :user_id 
+                              AND m.lu = 0");
+        $stmt->execute(['user_id' => $user_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $unread_messages = $result['count'];
+    } catch (PDOException $e) {
+        // En cas d'erreur avec la base de données, ne pas afficher l'erreur mais simplement ne pas montrer de notification
+        $unread_messages = 0;
+    }
+}
 ?>
 
 <nav class="navbar navbar-sm navbar-expand-lg navbar-light bg-light">
@@ -45,19 +67,12 @@ $unread_messages = 0;
                 <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
                 <li class="nav-item"><a class="nav-link py-1" href="settings.php"><i class="fas fa-cogs"></i> Paramètres</a></li>
 
-                <?php elseif (isset($user_role) && $user_role === 3): ?>
-                <!-- Personnel -->
-                <li class="nav-item"><a class="nav-link py-1" href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Tableau</a></li>
-                <li class="nav-item"><a class="nav-link" href="students.php"><i class="fas fa-user-graduate"></i> Étudiants</a></li>
-                <li class="nav-item"><a class="nav-link py-1" href="documents.php"><i class="fas fa-file-alt"></i> Docs</a></li>
-                <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
-                <?php endif; ?>
             </ul>
 
             <?php if (isset($_SESSION['user_id'])): ?>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item position-relative">
-                    <a class="nav-link py-1" href="forum.php" id="messagesDropdown">
+                    <a class="nav-link py-1" href="messagerie.php" id="messagesDropdown">
                         <i class="fas fa-envelope"></i>
                         <?php if ($unread_messages > 0): ?>
                             <span class="badge rounded-pill bg-danger badge-notification"><?= $unread_messages; ?></span>
