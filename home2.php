@@ -391,43 +391,7 @@ function getRandomColor() {
             </div>
         <?php endif; ?>
     </div>
-</section>
-            <!-- Modules -->
-            <section class="courses-section">
-                <h2 class="section-title">Liste des Modules</h2>
-                <div class="row">
-                    <?php if(!empty($modules)): ?>
-                        <?php foreach(array_slice($modules, 0, 3) as $module): ?>
-                            <?php $color = getRandomColor(); ?>
-                            <div class="col-md-4">
-                                <div class="card module-card shadow">
-                                        <div class="card-img-top" style="height: 120px; background: url('uploads/Fond.png') center/cover no-repeat;"></div>
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
-                                        <div class="d-flex gap-2">
-                                            <a href="cours.php?module_id=<?=$module['id_module'] ?>" class="btn btn-primary btn-sm">Gérer</a>
-                                            <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        
-                        <?php if (count($modules) > 3): ?>
-                            <div class="col-12 mt-3 text-center">
-                                <a href="#" class="btn btn-outline-primary">Voir tous les modules (<?php echo count($modules); ?>)</a>
-                            </div>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                Aucun module trouvé.
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </section>
-                </div>
+ 
 
 
     <script>
