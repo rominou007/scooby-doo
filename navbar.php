@@ -68,6 +68,7 @@ if ($user_id) {
                 <li class="nav-item"><a class="nav-link py-1" href="settings.php"><i class="fas fa-cogs"></i> Paramètres</a></li>
 
             </ul>
+            <?php endif; ?>
 
             <?php if (isset($_SESSION['user_id'])): ?>
             <ul class="navbar-nav ms-auto">
