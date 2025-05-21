@@ -55,12 +55,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $new_class_year = $_POST['new_class_year'];
                 $new_class_desc = trim($_POST['new_class_desc'] ?? '');
                 
-                $createClassSql = "INSERT INTO classes (class_name, année_scolaire, description) 
-                                  VALUES (:class_name, :année_scolaire, :description)";
+                $createClassSql = "INSERT INTO classes (class_name, annee_scolaire, description) 
+                                  VALUES (:class_name, :annee_scolaire, :description)";
                 $createClassStmt = $pdo->prepare($createClassSql);
                 $createClassStmt->execute([
                     'class_name' => $new_class_name,
-                    'année_scolaire' => $new_class_year,
+                    'annee_scolaire' => $new_class_year,
                     'description' => $new_class_desc
                 ]);
                 
@@ -424,10 +424,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         <?php
                                         // Récupérer la liste des classes existantes
                                         try {
-                                            $classesSql = "SELECT class_id, class_name, année_scolaire FROM classes ORDER BY class_name";
+                                            $classesSql = "SELECT class_id, class_name, annee_scolaire FROM classes ORDER BY class_name";
                                             $classesStmt = $pdo->query($classesSql);
                                             while ($class = $classesStmt->fetch()) {
-                                                echo '<option value="' . $class['class_id'] . '">' . htmlspecialchars($class['class_name']) . ' (' . $class['année_scolaire'] . ')</option>';
+                                                echo '<option value="' . $class['class_id'] . '">' . htmlspecialchars($class['class_name']) . ' (' . $class['annee_scolaire'] . ')</option>';
                                             }
                                         } catch (PDOException $e) {
                                             // Gérer l'erreur en silence, l'utilisateur pourra toujours créer un élève sans classe
