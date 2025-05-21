@@ -8,7 +8,15 @@
         header("location: home.php");
         exit;
     }
-    $listUsers = $pdo->query("SELECT * FROM user")->fetchAll();
+
+    if (!empty($_GET['search'])) {
+        $search = '%' . $_GET['search'] . '%';
+        $stmt = $pdo->prepare("SELECT * FROM user WHERE prenom LIKE :search OR nom LIKE :search OR email LIKE :search");
+        $stmt->execute(['search' => $search]);
+        $listUsers = $stmt->fetchAll();
+    } else {
+        $listUsers = $pdo->query("SELECT * FROM user")->fetchAll();
+    }
 
 
 ?>
@@ -26,6 +34,11 @@
 <body>
 
   <h1 class="text-center mt-5">Tableau des utilisateurs</h1>
+
+  <form method="get" class="mb-4 text-center">
+    <input type="text" name="search" class="form-control d-inline-block w-auto" placeholder="Rechercher un utilisateur..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+    <button type="submit" class="btn btn-primary ms-2">Rechercher</button>
+  </form>
 
   <table class="container mt-5 table table-striped  table-hover">
         <thead>
