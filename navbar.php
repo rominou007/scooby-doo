@@ -65,8 +65,9 @@ if ($user_id) {
                 <li class="nav-item"><a class="nav-link py-1" href="classes.php"><i class="fas fa-user-graduate"></i> Classes</a></li>
                 <li class="nav-item"><a class="nav-link py-1" href="modules.php"><i class="fas fa-book"></i> Modules</a></li>
                  
-            </ul>
+            
             <?php endif; ?>
+            </ul>
 
             <?php if (isset($_SESSION['user_id'])): ?>
             <ul class="navbar-nav ms-auto">

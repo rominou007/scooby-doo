@@ -22,8 +22,8 @@ foreach ($classes as $classe) {
         WHERE sc.class_id = :class_id AND u.role = 0
         ORDER BY u.nom, u.prenom
     ");
-    $stmt->execute(['class_id' => $classe['id']]);
-    $classes_etudiants[$classe['id']] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->execute(['class_id' => $classe['class_id']]);
+    $classes_etudiants[$classe['class_id']] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
 
@@ -47,7 +47,7 @@ foreach ($classes as $classe) {
                     <div>
                         <h4 class="mb-0 d-inline">
                             <?= htmlspecialchars($classe['class_name']) ?>
-                            <small class="text-light ms-3">(Année : <?= htmlspecialchars($classe['année_scolaire']) ?>)</small>
+                            <small class="text-light ms-3">(Année : <?= htmlspecialchars($classe['annee_scolaire']) ?>)</small>
                         </h4>
                     </div>
                     <a href="register.php?type=student&class_id=<?= urlencode($classe['class_id']) ?>" class="btn btn-warning btn-sm">
@@ -55,7 +55,7 @@ foreach ($classes as $classe) {
                     </a>
                 </div>
                 <div class="card-body">
-                    <?php if (empty($classes_etudiants[$classe['id']])): ?>
+                    <?php if (empty($classes_etudiants[$classe['class_id']])): ?>
                         <p class="text-muted">Aucun étudiant dans cette classe.</p>
                     <?php else: ?>
                         <table class="table table-bordered table-hover">
@@ -68,7 +68,7 @@ foreach ($classes as $classe) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($classes_etudiants[$classe['id']] as $etudiant): ?>
+                                <?php foreach ($classes_etudiants[$classe['class_id']] as $etudiant): ?>
                                     <tr>
                                         <td><?= htmlspecialchars($etudiant['id_user']) ?></td>
                                         <td><?= htmlspecialchars($etudiant['prenom']) ?></td>
