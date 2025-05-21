@@ -200,14 +200,7 @@ function getRandomColor() {
                             </div>
                         <?php endif; ?>
                     </div>
-                    <div class="slider-navigation">
-                        <?php 
-                            $total_pages = ceil(count($modules) / 3);
-                            for ($i = 0; $i < $total_pages; $i++):
-                        ?>
-                            <span class="dot <?php echo $i === 0 ? 'active' : ''; ?>"></span>
-                        <?php endfor; ?>
-                    </div>
+            
                 </div>
             </section>
 
@@ -384,11 +377,7 @@ function getRandomColor() {
             </div>
 
         <?php else: ?>
-            <div class="col-12">
-                <div class="alert alert-info">
-                    Aucun utilisateur trouvé.
-                </div>
-            </div>
+
         <?php endif; ?>
     </div>
  
