@@ -109,7 +109,13 @@ $quizs = $pdo->query("
             <div class="alert alert-info">Aucun quiz disponible.</div>
         <?php else: ?>
             <div class="row">
-                <?php foreach ($quizs as $quiz): ?>
+                <?php
+                $isAdminOrProf = isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2]);
+                $isStudent = isset($_SESSION['role']) && $_SESSION['role'] == 3;
+
+                foreach ($quizs as $quiz): 
+                    if ($isAdminOrProf || ($isStudent && $quiz['visible_etudiants'])):
+                ?>
                     <div class="col-md-4 mb-4">
                         <div class="card h-100 bg-dark text-white">
                             <div class="card-body">
@@ -130,7 +136,10 @@ $quizs = $pdo->query("
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
+                <?php 
+                    endif;
+                endforeach; 
+                ?>
             </div>
         <?php endif; ?>
     </div>

@@ -126,11 +126,11 @@ CREATE TABLE `documents` (
   `id_cours` bigint(20) UNSIGNED DEFAULT NULL,-- ajout du lien avec le cours
   PRIMARY KEY (`id_document`),
   FOREIGN KEY (`id_etudiant`) REFERENCES `user` (`id_user`) ON DELETE CASCADE
-  --FOREIGN KEY (`id_cours`) REFERENCES `cours` (`id_cours`) ON DELETE SET NULL,
+  FOREIGN KEY (`id_cours`) REFERENCES `cours` (`id_cours`) ON DELETE SET NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table des notes
-CREATE TABLE `notes` (
+CREATE TABLE `notes` (cours
   `id_note` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_etudiant` bigint(20) UNSIGNED NOT NULL,
   `id_module` bigint(20) UNSIGNED NOT NULL,

@@ -59,7 +59,7 @@ $quizs = $pdo->query("
               </div>
               <div class="mb-3">
                 <label for="module_id" class="form-label">Module</label>
-                <select class="form-control" name="module_id" id="module_id" required>
+                <select class="form-control" name="id_module" id="module_id" required>
                   <?php foreach ($modules as $module): ?>
                     <option value="<?= $module['id_module'] ?>"><?= htmlspecialchars($module['nom_module']) ?></option>
                   <?php endforeach; ?>
@@ -72,7 +72,6 @@ $quizs = $pdo->query("
             </div>
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary">Importer</button>
-              <a href="creer_quiz_manuel.php" class="btn btn-warning">Créer manuellement</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
             </div>
           </form>
@@ -123,7 +122,7 @@ $quizs = $pdo->query("
                                     <span class="badge bg-primary">
                                         <?= count(json_decode($quiz['questions'], true)) ?> questions
                                     </span>
-                                    <a href="faire_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
+                                    <a href="passer_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
                                         <i class="fas fa-play"></i> Commencer
                                     </a>
                                 </div>

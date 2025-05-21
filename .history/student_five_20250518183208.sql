@@ -123,10 +123,8 @@ CREATE TABLE `documents` (
   `type_document` varchar(50) NOT NULL,
   `chemin_fichier` varchar(255) NOT NULL,
   `date_televersement` timestamp NOT NULL DEFAULT current_timestamp(),
-  `id_cours` bigint(20) UNSIGNED DEFAULT NULL,-- ajout du lien avec le cours
   PRIMARY KEY (`id_document`),
   FOREIGN KEY (`id_etudiant`) REFERENCES `user` (`id_user`) ON DELETE CASCADE
-  --FOREIGN KEY (`id_cours`) REFERENCES `cours` (`id_cours`) ON DELETE SET NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table des notes
@@ -166,3 +164,81 @@ CREATE TABLE `forum_commentaires` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 COMMIT;
+
+<?php
+session_start();
+require('db.php');
+
+// Vérifie que l'utilisateur est prof ou admin
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], [1, 2])) {
+    header("Location: login.php");
+    exit();
+}
+
+$id_module = $_GET['module_id'] ?? null;
+$id_prof = $_SESSION['user_id'];
+$success = $error = "";
+
+// Traitement du formulaire d'ajout de cours
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours'])) {
+    $titre = trim($_POST['titre'] ?? '');
+    $contenu = trim($_POST['contenu'] ?? '');
+
+    if ($titre && $contenu && $id_module && $id_prof) {
+        $stmt = $pdo->prepare("INSERT INTO cours (id_module, id_prof, titre, contenu, date_creation) VALUES (:id_module, :id_prof, :titre, :contenu, NOW())");
+        $stmt->execute([
+            'id_module' => $id_module,
+            'id_prof' => $id_prof,
+            'titre' => $titre,
+            'contenu' => $contenu
+        ]);
+        $success = "Cours ajouté avec succès.";
+    } else {
+        $error = "Veuillez remplir tous les champs.";
+    }
+}
+
+// Récupération des cours du module
+$cours_list = [];
+if ($id_module) {
+    $stmt = $pdo->prepare("SELECT * FROM cours WHERE id_module = :id_module ORDER BY date_creation DESC");
+    $stmt->execute(['id_module' => $id_module]);
+    $cours_list = $stmt->fetchAll();
+}
+?>
+
+<!-- Formulaire d'ajout de cours -->
+<div class="container mt-5 text-white">
+    <h2>Ajouter un cours</h2>
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php elseif ($error): ?>
+        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
+    <form method="post" class="mb-4 p-4 bg-dark rounded shadow">
+        <div class="mb-3">
+            <label for="titre" class="form-label">Titre du cours *</label>
+            <input type="text" name="titre" id="titre" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="contenu" class="form-label">Contenu *</label>
+            <textarea name="contenu" id="contenu" class="form-control" rows="6" required></textarea>
+        </div>
+        <button type="submit" name="ajouter_cours" class="btn btn-primary">Ajouter le cours</button>
+    </form>
+
+    <h3 class="mt-5">Cours du module :</h3>
+    <ul>
+        <?php foreach ($cours_list as $cours): ?>
+            <li>
+                <strong><?= htmlspecialchars($cours['titre']) ?></strong><br>
+                <?= nl2br(htmlspecialchars($cours['contenu'])) ?><br>
+                <small class="text-muted">Ajouté le <?= $cours['date_creation'] ?></small>
+            </li>
+        <?php endforeach; ?>
+        <?php if (empty($cours_list)): ?>
+            <li>Aucun cours pour ce module.</li>
+        <?php endif; ?>
+    </ul>
+</div>

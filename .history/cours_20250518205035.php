@@ -20,7 +20,7 @@ function isAuthorizedUploader($role) {
     return in_array($role, [1, 2], true); // 1 = prof, 2 = admin
 }
 
-$error = "";
+$success = $error = "";
 
 // Traitement du formulaire d'ajout de cours + document
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && isset($_SESSION['user_id']) && isAuthorizedUploader($_SESSION['role'])) {
@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
             'titre' => $titre,
             'contenu' => $contenu
         ]);
+        $success = "Cours ajouté avec succès.";
 
         // 2. Ajout du document si un fichier est envoyé
         if (!empty($_FILES['document']['name'])) {
@@ -50,15 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
                     'type_document' => 'cours_module_' . $id_module,
                     'chemin_fichier' => $targetPath
                 ]);
+                $success .= " Document joint ajouté.";
             } else {
                 $error = "Erreur lors du téléversement du document.";
             }
-        }
-
-        // Redirection PRG pour éviter la duplication
-        if (empty($error)) {
-            header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=1");
-            exit();
         }
     } else {
         $error = "Veuillez remplir tous les champs obligatoires.";
@@ -90,8 +86,8 @@ $documents = $stmt->fetchAll();
     <h1><?= htmlspecialchars($module['nom_module']) ?></h1>
     <p><?= htmlspecialchars($module['description']) ?></p>
 
-    <?php if (!empty($_GET['success'])): ?>
-        <div class="alert alert-success">Cours ajouté avec succès.</div>
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
     <?php elseif ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>

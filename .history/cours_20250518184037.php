@@ -20,7 +20,7 @@ function isAuthorizedUploader($role) {
     return in_array($role, [1, 2], true); // 1 = prof, 2 = admin
 }
 
-$error = "";
+$success = $error = "";
 
 // Traitement du formulaire d'ajout de cours + document
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && isset($_SESSION['user_id']) && isAuthorizedUploader($_SESSION['role'])) {
@@ -37,28 +37,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
             'titre' => $titre,
             'contenu' => $contenu
         ]);
+        $success = "Cours ajouté avec succès.";
 
         // 2. Ajout du document si un fichier est envoyé
         if (!empty($_FILES['document']['name'])) {
             $fileName = basename($_FILES['document']['name']);
             $targetPath = "uploads/" . uniqid() . "_" . $fileName;
             if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
-                // Ajout dans la table documents SANS id_cours
+                // Ajout dans la table documents
                 $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier, date_televersement) VALUES (:id_etudiant, :type_document, :chemin_fichier, NOW())");
                 $stmt->execute([
-                    'id_etudiant' => $id_prof,
+                    'id_etudiant' => $id_prof, // ou $_SESSION['user_id']
                     'type_document' => 'cours_module_' . $id_module,
                     'chemin_fichier' => $targetPath
                 ]);
+                $success .= " Document joint ajouté.";
             } else {
                 $error = "Erreur lors du téléversement du document.";
             }
-        }
-
-        // Redirection PRG pour éviter la duplication
-        if (empty($error)) {
-            header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=1");
-            exit();
         }
     } else {
         $error = "Veuillez remplir tous les champs obligatoires.";
@@ -90,8 +86,8 @@ $documents = $stmt->fetchAll();
     <h1><?= htmlspecialchars($module['nom_module']) ?></h1>
     <p><?= htmlspecialchars($module['description']) ?></p>
 
-    <?php if (!empty($_GET['success'])): ?>
-        <div class="alert alert-success">Cours ajouté avec succès.</div>
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
     <?php elseif ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
@@ -132,9 +128,7 @@ $documents = $stmt->fetchAll();
     <ul>
         <?php foreach ($documents as $doc): ?>
             <li>
-                <a href="<?= htmlspecialchars($doc['chemin_fichier']) ?>" target="_blank">
-                    <?= htmlspecialchars(basename($doc['chemin_fichier'])) ?>
-                </a>
+                <a href="<?= htmlspecialchars($doc['chemin_fichier']) ?>" target="_blank">Voir le document</a>
                 <small class="text-muted">(Ajouté le <?= $doc['date_televersement'] ?>)</small>
             </li>
         <?php endforeach; ?>

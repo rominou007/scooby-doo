@@ -123,7 +123,7 @@ $quizs = $pdo->query("
                                     <span class="badge bg-primary">
                                         <?= count(json_decode($quiz['questions'], true)) ?> questions
                                     </span>
-                                    <a href="faire_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
+                                    <a href="_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
                                         <i class="fas fa-play"></i> Commencer
                                     </a>
                                 </div>
