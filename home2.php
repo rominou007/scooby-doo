@@ -344,9 +344,8 @@ function getRandomColor() {
                                     <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
-                                        <p class="card-text"><?php echo htmlspecialchars(substr($module['description'], 0, 100) . '...'); ?></p>
                                         <div class="d-flex gap-2">
-                                            <a href="#" class="btn btn-primary btn-sm">Gérer</a>
+                                            <a href="cours.php?module_id=<?=$module['id_module'] ?>" class="btn btn-primary btn-sm">Gérer</a>
                                             <a href="#" class="btn btn-outline-secondary btn-sm">Voir les étudiants</a>
                                         </div>
                                     </div>
@@ -454,9 +453,8 @@ function getRandomColor() {
                                     <div class="card-img-top bg-<?php echo $color; ?>" style="height: 120px;"></div>
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']); ?></h5>
-                                        <p class="card-text"><?php echo htmlspecialchars(substr($module['description'], 0, 100) . '...'); ?></p>
                                         <div class="d-flex gap-2">
-                                            <a href="#" class="btn btn-primary btn-sm">Gérer</a>
+                                            <a href="cours.php?module_id=<?=$module['id_module'] ?>" class="btn btn-primary btn-sm">Gérer</a>
                                             <a href="#" class="btn btn-outline-secondary btn-sm">Modifier</a>
                                         </div>
                                     </div>
