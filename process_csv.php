@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["class"]) && isset($_FI
     
     try {
         // 1. Créer la classe dans la table 'classes'
-        $classSql = "INSERT INTO classes (class_name, description, année_scolaire) 
+        $classSql = "INSERT INTO classes (class_name, description, annee_scolaire) 
                      VALUES (:class_name, :description, :enrollment_year)";
         $classStmt = $pdo->prepare($classSql);
         $classStmt->execute([
