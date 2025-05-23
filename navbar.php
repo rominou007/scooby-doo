@@ -39,29 +39,28 @@ if ($user_id) {
 
         <div class="collapse navbar-collapse" id="navbarMain">
             <ul class="navbar-nav me-auto mb-0">
-
                 <?php if (isset($user_role)): ?>
-                    <?php if ($user_role === 0): ?>
-                        <!-- Étudiant -->
-                        <li class="nav-item"><a class="nav-link py-1" href="notes.php"><i class="fas fa-graduation-cap"></i> Notes</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
 
-                    <?php elseif ($user_role === 1): ?>
-                        <!-- Professeur -->
-                        <li class="nav-item"><a class="nav-link py-1" href="notes.php"><i class="fas fa-star"></i> Notes</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="classes.php"><i class="fas fa-users"></i> Classes</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
+                    <!-- Notes (tous) -->
+                    <li class="nav-item"><a class="nav-link py-1" href="notes.php"><i class="fas fa-star"></i> Notes</a></li>
 
-                    <?php elseif ($user_role === 2): ?>
-                        <!-- Admin -->
-                        <li class="nav-item"><a class="nav-link py-1" href="notes.php"><i class="fas fa-star"></i> Notes</a></li>
+                    <!-- Planning (tous) -->
+                    <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
+
+                    <!-- Modules (tous) -->
+                    <li class="nav-item"><a class="nav-link py-1" href="modules.php"><i class="fas fa-book"></i> Modules</a></li>
+
+                    <!-- Classes (prof et admin seulement) -->
+                    <?php if ($user_role === 1 || $user_role === 2): ?>
                         <li class="nav-item"><a class="nav-link py-1" href="classes.php"><i class="fas fa-users"></i> Classes</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="users.php"><i class="fas fa-users-cog"></i> Utilisateurs</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="modules.php"><i class="fas fa-book"></i> Modules</a></li>
                     <?php endif; ?>
-                <?php endif; ?>
 
+                    <!-- Utilisateurs (admin seulement) -->
+                    <?php if ($user_role === 2): ?>
+                        <li class="nav-item"><a class="nav-link py-1" href="users.php"><i class="fas fa-users-cog"></i> Utilisateurs</a></li>
+                    <?php endif; ?>
+
+                <?php endif; ?>
             </ul>
 
             <?php if ($user_id): ?>
