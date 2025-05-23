@@ -50,6 +50,9 @@ if ($user_id) {
                     <!-- Modules (tous) -->
                     <li class="nav-item"><a class="nav-link py-1" href="modules.php"><i class="fas fa-book"></i> Modules</a></li>
 
+                    <!-- Devoirs (tous) -->
+                    <li class="nav-item"><a class="nav-link py-1" href="devoirs.php"><i class="fas fa-tasks"></i> Devoirs</a></li>
+
                     <!-- Classes (prof et admin seulement) -->
                     <?php if ($user_role === 1 || $user_role === 2): ?>
                         <li class="nav-item"><a class="nav-link py-1" href="classes.php"><i class="fas fa-users"></i> Classes</a></li>

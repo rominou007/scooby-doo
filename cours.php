@@ -15,21 +15,19 @@ if (isset($_GET['module_id']) && !empty($_GET['module_id'])) {
     die("ID du module non spécifié");
 }
 
-// Fonction d'autorisation
 function isAuthorizedUploader($role) {
-    return in_array($role, [1, 2], true); // 1 = prof, 2 = admin
+    return in_array($role, [1, 2], true); // Prof ou Admin
 }
 
 $error = "";
 
-// Traitement du formulaire d'ajout de cours + document
+// Traitement du formulaire d'ajout de cours
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && isset($_SESSION['user_id']) && isAuthorizedUploader($_SESSION['role'])) {
     $titre = trim($_POST['titre'] ?? '');
     $contenu = trim($_POST['contenu'] ?? '');
     $id_prof = $_SESSION['user_id'];
 
     if ($titre && $contenu) {
-        // 1. Ajout du cours
         $stmt = $pdo->prepare("INSERT INTO cours (id_module, id_prof, titre, contenu, date_creation) VALUES (:id_module, :id_prof, :titre, :contenu, NOW())");
         $stmt->execute([
             'id_module' => $id_module,
@@ -38,12 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
             'contenu' => $contenu
         ]);
 
-        // 2. Ajout du document si un fichier est envoyé
         if (!empty($_FILES['document']['name'])) {
             $fileName = basename($_FILES['document']['name']);
             $targetPath = "uploads/" . uniqid() . "_" . $fileName;
             if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
-                // Ajout dans la table documents SANS id_cours
                 $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier, date_televersement) VALUES (:id_etudiant, :type_document, :chemin_fichier, NOW())");
                 $stmt->execute([
                     'id_etudiant' => $id_prof,
@@ -55,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
             }
         }
 
-        // Redirection PRG pour éviter la duplication
         if (empty($error)) {
             header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=1");
             exit();
@@ -65,12 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
     }
 }
 
-// Récupération des cours du module
 $stmt = $pdo->prepare("SELECT * FROM cours WHERE id_module = :id_module ORDER BY date_creation DESC");
 $stmt->execute(['id_module' => $id_module]);
 $cours_list = $stmt->fetchAll();
 
-// Récupération des documents liés au module
 $stmt = $pdo->prepare("SELECT * FROM documents WHERE type_document = :type_document");
 $stmt->execute(['type_document' => 'cours_module_' . $id_module]);
 $documents = $stmt->fetchAll();
@@ -142,6 +135,35 @@ $documents = $stmt->fetchAll();
             <li>Aucun document joint pour ce module.</li>
         <?php endif; ?>
     </ul>
+
+    <h3 class="mt-5">Devoirs à venir pour ce module :</h3>
+    <?php
+    $stmt = $pdo->prepare("SELECT * FROM devoirs WHERE id_module = :id_module AND date_limite >= NOW() ORDER BY date_limite ASC");
+    $stmt->execute(['id_module' => $id_module]);
+    $devoirs = $stmt->fetchAll();
+    ?>
+    <ul>
+        <?php foreach ($devoirs as $devoir): ?>
+            <li>
+                <strong>
+                    <a href="devoir_zoom.php?devoir_id=<?= $devoir['id_devoir'] ?>" class="text-white text-decoration-underline">
+                        <?= htmlspecialchars($devoir['titre']) ?>
+                    </a>
+                </strong>
+                <br>
+                <small class="text-muted">À rendre avant le <?= date('d/m/Y H:i', strtotime($devoir['date_limite'])) ?></small>
+            </li>
+        <?php endforeach; ?>
+        <?php if (empty($devoirs)): ?>
+            <li>Aucun devoir à venir pour ce module.</li>
+        <?php endif; ?>
+    </ul>
+
+    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2])): ?>
+        <a href="ajouter_devoir.php?module_id=<?= $id_module ?>" class="btn btn-outline-success mt-3">
+            <i class="fas fa-plus"></i> Ajouter un devoir pour ce module
+        </a>
+    <?php endif; ?>
 </div>
 </body>
 </html>
