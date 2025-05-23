@@ -14,25 +14,6 @@ $quizs = $pdo->query("
     LEFT JOIN user u ON q.id_prof = u.id_user
     ORDER BY q.date_creation DESC
 ")->fetchAll();
-
-// Récupère toutes les règles de visibilité
-$visibilites = [];
-$stmt = $pdo->query("SELECT * FROM quiz_visibilite");
-while ($row = $stmt->fetch()) {
-    $visibilites[$row['id_quiz']] = $row;
-}
-
-// Récupère toutes les classes
-$classes = [];
-foreach ($pdo->query("SELECT class_id, class_name FROM classes") as $row) {
-    $classes[$row['class_id']] = $row['class_name'];
-}
-
-// Récupère tous les élèves
-$eleves = [];
-foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as $row) {
-    $eleves[$row['id_user']] = $row['prenom'] . ' ' . $row['nom'];
-}
 ?>
 
 <!DOCTYPE html>
@@ -127,9 +108,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                 <select class="form-control" name="id_classe" id="classe-select">
                   <!-- Remplis dynamiquement avec tes classes -->
                   <option value="">Sélectionner une classe</option>
-                  <?php foreach ($classes as $id_classe => $nom_classe): ?>
-                    <option value="<?= $id_classe ?>"><?= htmlspecialchars($nom_classe) ?></option>
-                  <?php endforeach; ?>
                 </select>
               </div>
               <div class="mb-3 d-none" id="eleve-select-div">
@@ -137,9 +115,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                 <select class="form-control" name="id_eleve" id="eleve-select">
                   <!-- Remplis dynamiquement avec tes élèves -->
                   <option value="">Sélectionner un élève</option>
-                  <?php foreach ($eleves as $id_eleve => $nom_eleve): ?>
-                    <option value="<?= $id_eleve ?>"><?= htmlspecialchars($nom_eleve) ?></option>
-                  <?php endforeach; ?>
                 </select>
               </div>
               <div class="mb-3">
@@ -192,14 +167,14 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                 <?php foreach ($quizs as $quiz): ?>
                     <div class="col-md-4 mb-4">
                         <div class="card h-100 bg-dark text-white">
-                            <div class="card-body d-flex flex-column">
+                            <div class="card-body">
                                 <h5><?= htmlspecialchars($quiz['titre']) ?></h5>
                                 <p class="text-muted small">
                                     <i class="fas fa-book"></i> <?= htmlspecialchars($quiz['nom_module']) ?><br>
                                     <i class="fas fa-user"></i> <?= htmlspecialchars($quiz['prof_nom'] ?? 'Système') ?><br>
                                     <i class="fas fa-calendar"></i> <?= date('d/m/Y', strtotime($quiz['date_creation'])) ?>
                                 </p>
-                                <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
                                     <span class="badge bg-primary">
                                         <?= count(json_decode($quiz['questions'], true)) ?> questions
                                     </span>
@@ -218,57 +193,9 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                                             >
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <form method="post" action="supprimer_quiz.php" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce quiz ? Cette action est irréversible.');">
-                                                <input type="hidden" name="id_quiz" value="<?= $quiz['id_quiz'] ?>">
-                                                <button type="submit" class="btn btn-sm btn-danger ms-2" title="Supprimer le quiz">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                            <?php
-                                            $vis = $visibilites[$quiz['id_quiz']] ?? null;
-                                            $canEdit = true;
-                                            if ($vis && strtotime($vis['date_debut']) <= time()) {
-                                                $canEdit = false;
-                                            }
-                                            ?>
-                                            <?php if ($canEdit): ?>
-                                                <a href="modifier_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-warning ms-2" title="Modifier le quiz">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                <?php
-                                $vis = $visibilites[$quiz['id_quiz']] ?? null;
-                                if ($vis):
-                                ?>
-                                    <div class="mt-4 pt-2 border-top border-info">
-                                        <span class="badge bg-info text-dark p-2" style="font-size:1em;">
-                                            Visible à :
-                                            <?php
-                                            if ($vis['cible'] === 'tous') {
-                                                echo 'Tous les étudiants';
-                                            } elseif ($vis['cible'] === 'classe') {
-                                                echo 'Classe : ' . ($classes[$vis['id_cible']] ?? 'Inconnue');
-                                            } elseif ($vis['cible'] === 'eleve') {
-                                                echo 'Élève : ' . ($eleves[$vis['id_cible']] ?? 'Inconnu');
-                                            }
-                                            ?>
-                                            <br>
-                                            Du <?= date('d/m/Y H:i', strtotime($vis['date_debut'])) ?>
-                                            <?php if ($vis['date_fin']): ?>
-                                                au <?= date('d/m/Y H:i', strtotime($vis['date_fin'])) ?>
-                                                <?php
-                                                    $duree = strtotime($vis['date_fin']) - strtotime($vis['date_debut']);
-                                                    $heures = floor($duree / 3600);
-                                                    $minutes = floor(($duree % 3600) / 60);
-                                                    echo '<br>Durée : ' . ($heures ? $heures . 'h ' : '') . $minutes . 'min';
-                                                ?>
-                                            <?php endif; ?>
-                                        </span>
-                                    </div>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -276,14 +203,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
             </div>
         <?php endif; ?>
     </div>
-
-    <!-- Message de succès pour la suppression d'un quiz -->
-    <?php if (isset($_GET['success']) && $_GET['success'] === 'quiz_deleted'): ?>
-        <div class="alert alert-success">Quiz supprimé avec succès.</div>
-    <?php endif; ?>
-    <?php if (isset($_GET['success']) && $_GET['success'] === 'quiz_modified'): ?>
-        <div class="alert alert-success">Quiz modifié avec succès.</div>
-    <?php endif; ?>
 </div>
 
 <!-- Scripts JS -->

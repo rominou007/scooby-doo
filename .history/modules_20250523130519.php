@@ -218,24 +218,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                                             >
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <form method="post" action="supprimer_quiz.php" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce quiz ? Cette action est irréversible.');">
-                                                <input type="hidden" name="id_quiz" value="<?= $quiz['id_quiz'] ?>">
-                                                <button type="submit" class="btn btn-sm btn-danger ms-2" title="Supprimer le quiz">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                            <?php
-                                            $vis = $visibilites[$quiz['id_quiz']] ?? null;
-                                            $canEdit = true;
-                                            if ($vis && strtotime($vis['date_debut']) <= time()) {
-                                                $canEdit = false;
-                                            }
-                                            ?>
-                                            <?php if ($canEdit): ?>
-                                                <a href="modifier_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-warning ms-2" title="Modifier le quiz">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -276,14 +258,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
             </div>
         <?php endif; ?>
     </div>
-
-    <!-- Message de succès pour la suppression d'un quiz -->
-    <?php if (isset($_GET['success']) && $_GET['success'] === 'quiz_deleted'): ?>
-        <div class="alert alert-success">Quiz supprimé avec succès.</div>
-    <?php endif; ?>
-    <?php if (isset($_GET['success']) && $_GET['success'] === 'quiz_modified'): ?>
-        <div class="alert alert-success">Quiz modifié avec succès.</div>
-    <?php endif; ?>
 </div>
 
 <!-- Scripts JS -->
