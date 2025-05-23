@@ -64,7 +64,7 @@ try {
     $stmt->execute([
         $id_module,
         $_SESSION['user_id'],
-        $_POST['titre'], // Utilise le titre saisi dans le formulaire
+        "Quiz importé - " . date('d/m/Y'),
         json_encode($data, JSON_UNESCAPED_UNICODE)
     ]);
     

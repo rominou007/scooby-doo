@@ -224,18 +224,9 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                            <?php
-                                            $vis = $visibilites[$quiz['id_quiz']] ?? null;
-                                            $canEdit = true;
-                                            if ($vis && strtotime($vis['date_debut']) <= time()) {
-                                                $canEdit = false;
-                                            }
-                                            ?>
-                                            <?php if ($canEdit): ?>
-                                                <a href="modifier_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-warning ms-2" title="Modifier le quiz">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            <?php endif; ?>
+                                            <a href="modifier_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-warning ms-2" title="Modifier le quiz">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
                                         <?php endif; ?>
                                     </div>
                                 </div>
