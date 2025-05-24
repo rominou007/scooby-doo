@@ -32,19 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titre'], $_POST['modu
     }
 
     // Insertion en base
-    $stmt = $pdo->prepare("INSERT INTO quiz (id_module, id_prof, titre, questions, visible_etudiants) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO quiz (id_module, id_prof, titre, questions) VALUES (?, ?, ?, ?)");
     $stmt->execute([
         $id_module,
         $id_prof,
         $titre,
-        json_encode($questions_json, JSON_UNESCAPED_UNICODE),
-        $visible_etudiants
+        json_encode($questions_json, JSON_UNESCAPED_UNICODE)
     ]);
     header("Location: modules.php?success=quiz");
     exit;
 }
 
-$visible_etudiants = isset($_POST['visible_etudiants']) ? 1 : 0;
+
 ?>
 
 <!DOCTYPE html>

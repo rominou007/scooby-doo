@@ -2,18 +2,90 @@
 session_start();
 require('db.php');
 
-// Récupérer tous les modules
-$stmt = $pdo->query("SELECT * FROM modules ORDER BY date_creation DESC");
-$modules = $stmt->fetchAll();
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
+}
 
-// Récupérer les quiz existants
-$quizs = $pdo->query("
-    SELECT q.*, m.nom_module, u.nom AS prof_nom 
-    FROM quiz q
-    JOIN modules m ON q.id_module = m.id_module
-    LEFT JOIN user u ON q.id_prof = u.id_user
-    ORDER BY q.date_creation DESC
-")->fetchAll();
+$user_id = $_SESSION['user_id'];
+$user_role = $_SESSION['role'];
+
+// Récupération des modules selon le rôle de l'utilisateur
+if ($user_role == 2) { // Admin
+    // L'admin voit tous les modules
+    $stmt = $pdo->query("SELECT m.*, c.class_name 
+                         FROM modules m 
+                         LEFT JOIN classes c ON m.class_id = c.class_id 
+                         ORDER BY m.date_creation DESC");
+    $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($user_role == 1) { // Professeur
+    // Le professeur voit les modules auxquels il est associé via profs_modules
+    $stmt = $pdo->prepare("SELECT m.*, c.class_name 
+                          FROM modules m 
+                          LEFT JOIN classes c ON m.class_id = c.class_id 
+                          JOIN profs_modules pm ON m.id_module = pm.id_module 
+                          WHERE pm.id_prof = ? 
+                          ORDER BY m.date_creation DESC");
+    $stmt->execute([$user_id]);
+    $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else { // Étudiant
+    // L'étudiant voit les modules liés à sa classe
+    $stmt = $pdo->prepare("SELECT m.*, c.class_name 
+                          FROM modules m 
+                          JOIN classes c ON m.class_id = c.class_id 
+                          JOIN student_classes sc ON c.class_id = sc.class_id 
+                          WHERE sc.student_id = ? 
+                          ORDER BY m.date_creation DESC");
+    $stmt->execute([$user_id]);
+    $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Récupérer les quiz selon le rôle de l'utilisateur
+if ($user_role == 2) { // Admin
+    // L'admin voit tous les quiz
+    $quizs = $pdo->query("
+        SELECT q.*, m.nom_module, u.nom AS prof_nom, u.prenom AS prof_prenom
+        FROM quiz q
+        JOIN modules m ON q.id_module = m.id_module
+        LEFT JOIN user u ON q.id_prof = u.id_user
+        ORDER BY q.date_creation DESC
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($user_role == 1) { // Professeur
+    // Le professeur voit les quiz de ses modules ou qu'il a créés
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT q.*, m.nom_module, u.nom AS prof_nom, u.prenom AS prof_prenom
+        FROM quiz q
+        JOIN modules m ON q.id_module = m.id_module
+        LEFT JOIN user u ON q.id_prof = u.id_user
+        LEFT JOIN profs_modules pm ON m.id_module = pm.id_module
+        WHERE q.id_prof = ? OR pm.id_prof = ?
+        ORDER BY q.date_creation DESC
+    ");
+    $stmt->execute([$user_id, $user_id]);
+    $quizs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else { // Étudiant
+    // L'étudiant voit les quiz des modules de sa classe qui sont visibles pour lui
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT q.*, m.nom_module, u.nom AS prof_nom, u.prenom AS prof_prenom
+        FROM quiz q
+        JOIN modules m ON q.id_module = m.id_module
+        LEFT JOIN user u ON q.id_prof = u.id_user
+        JOIN student_classes sc ON sc.student_id = ?
+        LEFT JOIN quiz_visibilite qv ON q.id_quiz = qv.id_quiz
+        WHERE 
+            m.class_id = sc.class_id
+            AND (
+                qv.id_quiz IS NULL 
+                OR qv.cible = 'tous'
+                OR (qv.cible = 'classe' AND qv.id_cible = sc.class_id)
+                OR (qv.cible = 'eleve' AND qv.id_cible = ?)
+            )
+        ORDER BY q.date_creation DESC
+    ");
+    $stmt->execute([$user_id, $user_id]);
+    $quizs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 // Récupère toutes les règles de visibilité
 $visibilites = [];
@@ -41,14 +113,20 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
     <meta charset="UTF-8">
     <title>Accueil - Modules</title>
     <?php include("link.php"); ?>
-    <!-- Ajout de Font Awesome pour les icônes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <?php include("navbar.php"); ?>
 
 <div class="container mt-5">
-    <h1 class="mb-4 text-white">Liste des modules</h1>
+    <h1 class="mb-4 text-white">
+        <?php if ($user_role == 0): ?>
+            Mes modules
+        <?php elseif ($user_role == 1): ?>
+            Mes modules d'enseignement
+        <?php else: ?>
+            Gestion des modules
+        <?php endif; ?>
+    </h1>
 
     <!-- Boutons d'action -->
     <div class="d-flex gap-2 mb-4">
@@ -125,7 +203,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
               <div class="mb-3 d-none" id="classe-select-div">
                 <label class="form-label">Classe</label>
                 <select class="form-control" name="id_classe" id="classe-select">
-                  <!-- Remplis dynamiquement avec tes classes -->
                   <option value="">Sélectionner une classe</option>
                   <?php foreach ($classes as $id_classe => $nom_classe): ?>
                     <option value="<?= $id_classe ?>"><?= htmlspecialchars($nom_classe) ?></option>
@@ -135,7 +212,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
               <div class="mb-3 d-none" id="eleve-select-div">
                 <label class="form-label">Élève</label>
                 <select class="form-control" name="id_eleve" id="eleve-select">
-                  <!-- Remplis dynamiquement avec tes élèves -->
                   <option value="">Sélectionner un élève</option>
                   <?php foreach ($eleves as $id_eleve => $nom_eleve): ?>
                     <option value="<?= $id_eleve ?>"><?= htmlspecialchars($nom_eleve) ?></option>
@@ -162,16 +238,76 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
 
     <!-- Liste des modules -->
     <?php if (empty($modules)): ?>
-        <div class="alert alert-info">Aucun module n’a encore été ajouté.</div>
+        <div class="alert alert-info">
+            <?php if ($user_role == 0): ?>
+                Vous n'êtes inscrit à aucun module pour le moment.
+            <?php elseif ($user_role == 1): ?>
+                Vous n'êtes assigné à aucun module. Veuillez contacter l'administration.
+            <?php else: ?>
+                Aucun module n'a encore été ajouté.
+            <?php endif; ?>
+        </div>
     <?php else: ?>
         <div class="row">
             <?php foreach ($modules as $module): ?>
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span><?= htmlspecialchars($module['code_module']) ?></span>
+                            <?php if ($module['class_name']): ?>
+                                <span class="badge bg-info"><?= htmlspecialchars($module['class_name']) ?></span>
+                            <?php endif; ?>
+                        </div>
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($module['nom_module']) ?></h5>
-                            <p class="card-text"><?= htmlspecialchars($module['description']) ?></p>
-                            <a href="cours.php?module_id=<?= $module['id_module'] ?>" class="btn btn-primary">Voir le module</a>
+                            <?php if (!empty($module['description'])): ?>
+                                <p class="card-text"><?= nl2br(htmlspecialchars(substr($module['description'], 0, 100))) ?>...</p>
+                            <?php else: ?>
+                                <p class="card-text text-muted"><i>Aucune description disponible</i></p>
+                            <?php endif; ?>
+                            
+                            <?php
+                            // Récupérer les professeurs associés à ce module
+                            $prof_stmt = $pdo->prepare("
+                                SELECT u.prenom, u.nom 
+                                FROM profs_modules pm
+                                JOIN user u ON pm.id_prof = u.id_user
+                                WHERE pm.id_module = ?
+                            ");
+                            $prof_stmt->execute([$module['id_module']]);
+                            $profs = $prof_stmt->fetchAll(PDO::FETCH_ASSOC);
+                            
+                            if (!empty($profs)): ?>
+                                <div class="text-muted small mb-2">
+                                    <i class="fas fa-chalkboard-teacher me-1"></i> Enseignants:
+                                    <?php 
+                                    $prof_names = array_map(function($p) {
+                                        return $p['prenom'] . ' ' . $p['nom'];
+                                    }, $profs);
+                                    echo htmlspecialchars(implode(', ', $prof_names));
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="card-footer bg-light d-flex justify-content-between">
+                            <a href="cours.php?module_id=<?= $module['id_module'] ?>" class="btn btn-primary">
+                                <i class="fas fa-book-open me-1"></i> Accéder
+                            </a>
+                            
+                            <?php if ($user_role == 1 || $user_role == 2): ?>
+                                <div>
+                                    <a href="edit_module.php?id=<?= $module['id_module'] ?>" class="btn btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <?php if ($user_role == 2): // Seul l'admin peut supprimer ?>
+                                        <button type="button" class="btn btn-outline-danger ms-1" 
+                                                onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce module?')) 
+                                                window.location.href='supprimer_module.php?id=<?= $module['id_module'] ?>'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -182,7 +318,12 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
     <!-- Section dédiée aux quiz -->
     <div class="mt-5">
         <h2 class="text-white mb-4">
-            <i class="fas fa-question"></i> Quiz disponibles
+            <i class="fas fa-question"></i> 
+            <?php if ($user_role == 0): ?>
+                Quiz disponibles
+            <?php else: ?>
+                Gestion des quiz
+            <?php endif; ?>
         </h2>
         
         <?php if (empty($quizs)): ?>
@@ -196,7 +337,7 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                                 <h5><?= htmlspecialchars($quiz['titre']) ?></h5>
                                 <p class="text-muted small">
                                     <i class="fas fa-book"></i> <?= htmlspecialchars($quiz['nom_module']) ?><br>
-                                    <i class="fas fa-user"></i> <?= htmlspecialchars($quiz['prof_nom'] ?? 'Système') ?><br>
+                                    <i class="fas fa-user"></i> <?= htmlspecialchars(($quiz['prof_prenom'] ?? '') . ' ' . ($quiz['prof_nom'] ?? 'Système')) ?><br>
                                     <i class="fas fa-calendar"></i> <?= date('d/m/Y', strtotime($quiz['date_creation'])) ?>
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
@@ -204,9 +345,23 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                                         <?= count(json_decode($quiz['questions'], true)) ?> questions
                                     </span>
                                     <div>
-                                        <a href="faire_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-play"></i> Commencer
-                                        </a>
+                                        <?php
+                                        $vis = $visibilites[$quiz['id_quiz']] ?? null;
+                                        $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
+                                        $canStart = true;
+                                        if ($vis && strtotime($vis['date_debut']) > time() && in_array($role, [0, 1])) {
+                                            $canStart = false;
+                                        }
+                                        ?>
+                                        <?php if ($canStart): ?>
+                                            <a href="faire_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-play"></i> Commencer
+                                            </a>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-lock"></i> Pas encore disponible
+                                            </button>
+                                        <?php endif; ?>
                                         <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2])): ?>
                                             <button 
                                                 class="btn btn-sm btn-outline-light ms-2" 
@@ -287,7 +442,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
 </div>
 
 <!-- Scripts JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 var visibilityModal = document.getElementById('visibilityModal');
 if (visibilityModal) {
