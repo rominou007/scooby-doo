@@ -2,10 +2,10 @@
 session_start();
 require('db.php');
 
-// Vérification des permissions
+$id_quiz = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], [1, 2])) {
-    header("HTTP/1.1 403 Forbidden");
-    exit;
+// Récupère la visibilitéForbidden");
+$stmt = $pdo->prepare("SELECT * FROM quiz_visibilite WHERE id_quiz = ?");
 }
 
 // Validation des données

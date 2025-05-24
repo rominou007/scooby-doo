@@ -15,19 +15,21 @@ if (isset($_GET['module_id']) && !empty($_GET['module_id'])) {
     die("ID du module non spécifié");
 }
 
+// Fonction d'autorisation
 function isAuthorizedUploader($role) {
-    return in_array($role, [1, 2], true); // Prof ou Admin
+    return in_array($role, [1, 2], true); // 1 = prof, 2 = admin
 }
 
 $error = "";
 
-// Traitement du formulaire d'ajout de cours
+// Traitement du formulaire d'ajout de cours + document
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && isset($_SESSION['user_id']) && isAuthorizedUploader($_SESSION['role'])) {
     $titre = trim($_POST['titre'] ?? '');
     $contenu = trim($_POST['contenu'] ?? '');
     $id_prof = $_SESSION['user_id'];
 
     if ($titre && $contenu) {
+        // 1. Ajout du cours
         $stmt = $pdo->prepare("INSERT INTO cours (id_module, id_prof, titre, contenu, date_creation) VALUES (:id_module, :id_prof, :titre, :contenu, NOW())");
         $stmt->execute([
             'id_module' => $id_module,
@@ -36,21 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
             'contenu' => $contenu
         ]);
 
+        // 2. Ajout du document si un fichier est envoyé
         if (!empty($_FILES['document']['name'])) {
             $fileName = basename($_FILES['document']['name']);
             $targetPath = "uploads/" . uniqid() . "_" . $fileName;
             if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
-                $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier, date_televersement) VALUES (:id_etudiant, :type_document, :chemin_fichier, NOW())");
+                // Ajout dans la table documents AVEC le titre du cours
+                $stmt = $pdo->prepare("INSERT INTO documents (id_etudiant, type_document, chemin_fichier, titre, date_televersement) VALUES (:id_etudiant, :type_document, :chemin_fichier, :titre, NOW())");
                 $stmt->execute([
                     'id_etudiant' => $id_prof,
                     'type_document' => 'cours_module_' . $id_module,
-                    'chemin_fichier' => $targetPath
+                    'chemin_fichier' => $targetPath,
+                    'titre' => $titre // même titre que le cours
                 ]);
             } else {
                 $error = "Erreur lors du téléversement du document.";
             }
         }
 
+        // Redirection PRG pour éviter la duplication
         if (empty($error)) {
             header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=1");
             exit();
@@ -60,10 +66,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_cours']) && i
     }
 }
 
+// Suppression d'un cours
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_cours_id']) && isAuthorizedUploader($_SESSION['role'])) {
+    $id_cours = intval($_POST['supprimer_cours_id']);
+    // Supprimer le cours
+    $stmt = $pdo->prepare("DELETE FROM cours WHERE id_cours = :id_cours AND id_module = :id_module");
+    $stmt->execute(['id_cours' => $id_cours, 'id_module' => $id_module]);
+    // Redirection pour éviter la re-soumission
+    header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=2");
+    exit();
+}
+
+// Suppression d'un document
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_document_id']) && isAuthorizedUploader($_SESSION['role'])) {
+    $id_doc = intval($_POST['supprimer_document_id']);
+    // Récupérer le chemin du fichier pour le supprimer physiquement
+    $stmt = $pdo->prepare("SELECT chemin_fichier FROM documents WHERE id_document = :id_document");
+    $stmt->execute(['id_document' => $id_doc]);
+    $doc = $stmt->fetch();
+    if ($doc && file_exists($doc['chemin_fichier'])) {
+        unlink($doc['chemin_fichier']);
+    }
+    // Supprimer l'entrée en base
+    $stmt = $pdo->prepare("DELETE FROM documents WHERE id_document = :id_document");
+    $stmt->execute(['id_document' => $id_doc]);
+    header("Location: cours.php?module_id=" . urlencode($id_module) . "&success=3");
+    exit();
+}
+
+// Récupération des cours du module
 $stmt = $pdo->prepare("SELECT * FROM cours WHERE id_module = :id_module ORDER BY date_creation DESC");
 $stmt->execute(['id_module' => $id_module]);
 $cours_list = $stmt->fetchAll();
 
+// Récupération des documents liés au module
 $stmt = $pdo->prepare("SELECT * FROM documents WHERE type_document = :type_document");
 $stmt->execute(['type_document' => 'cours_module_' . $id_module]);
 $documents = $stmt->fetchAll();
@@ -75,6 +111,10 @@ $documents = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($module['nom_module']) ?></title>
     <?php include("link.php"); ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .doc-blanc { color: #fff !important; }
+    </style>
 </head>
 <body>
 <?php include("navbar.php"); ?>
@@ -87,6 +127,12 @@ $documents = $stmt->fetchAll();
         <div class="alert alert-success">Cours ajouté avec succès.</div>
     <?php elseif ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+    <?php if (!empty($_GET['success']) && $_GET['success'] == 2): ?>
+        <div class="alert alert-success">Cours supprimé avec succès.</div>
+    <?php endif; ?>
+    <?php if (!empty($_GET['success']) && $_GET['success'] == 3): ?>
+        <div class="alert alert-success">Document supprimé avec succès.</div>
     <?php endif; ?>
 
     <?php if (isset($_SESSION['role']) && isAuthorizedUploader($_SESSION['role'])): ?>
@@ -114,6 +160,14 @@ $documents = $stmt->fetchAll();
                 <strong><?= htmlspecialchars($cours['titre']) ?></strong><br>
                 <?= nl2br(htmlspecialchars($cours['contenu'])) ?><br>
                 <small class="text-muted">Ajouté le <?= $cours['date_creation'] ?></small>
+                <?php if (isset($_SESSION['role']) && isAuthorizedUploader($_SESSION['role'])): ?>
+                    <form method="post" style="display:inline;" onsubmit="return confirm('Supprimer ce cours ?');">
+                        <input type="hidden" name="supprimer_cours_id" value="<?= $cours['id_cours'] ?>">
+                        <button type="submit" class="btn btn-link p-0" title="Supprimer">
+                            <i class="fa fa-trash text-danger"></i>
+                        </button>
+                    </form>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
         <?php if (empty($cours_list)): ?>
@@ -125,45 +179,24 @@ $documents = $stmt->fetchAll();
     <ul>
         <?php foreach ($documents as $doc): ?>
             <li>
-                <a href="<?= htmlspecialchars($doc['chemin_fichier']) ?>" target="_blank">
-                    <?= htmlspecialchars(basename($doc['chemin_fichier'])) ?>
+                <a href="<?= htmlspecialchars($doc['chemin_fichier']) ?>" target="_blank" class="doc-blanc">
+                    <?= htmlspecialchars($doc['titre'] ?: basename($doc['chemin_fichier'])) ?>
                 </a>
                 <small class="text-muted">(Ajouté le <?= $doc['date_televersement'] ?>)</small>
+                <?php if (isset($_SESSION['role']) && isAuthorizedUploader($_SESSION['role'])): ?>
+                    <form method="post" style="display:inline;" onsubmit="return confirm('Supprimer ce document ?');">
+                        <input type="hidden" name="supprimer_document_id" value="<?= $doc['id_document'] ?>">
+                        <button type="submit" class="btn btn-link p-0" title="Supprimer">
+                            <i class="fa fa-trash text-danger"></i>
+                        </button>
+                    </form>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
         <?php if (empty($documents)): ?>
             <li>Aucun document joint pour ce module.</li>
         <?php endif; ?>
     </ul>
-
-    <h3 class="mt-5">Devoirs à venir pour ce module :</h3>
-    <?php
-    $stmt = $pdo->prepare("SELECT * FROM devoirs WHERE id_module = :id_module AND date_limite >= NOW() ORDER BY date_limite ASC");
-    $stmt->execute(['id_module' => $id_module]);
-    $devoirs = $stmt->fetchAll();
-    ?>
-    <ul>
-        <?php foreach ($devoirs as $devoir): ?>
-            <li>
-                <strong>
-                    <a href="devoir_zoom.php?devoir_id=<?= $devoir['id_devoir'] ?>" class="text-white text-decoration-underline">
-                        <?= htmlspecialchars($devoir['titre']) ?>
-                    </a>
-                </strong>
-                <br>
-                <small class="text-muted">À rendre avant le <?= date('d/m/Y H:i', strtotime($devoir['date_limite'])) ?></small>
-            </li>
-        <?php endforeach; ?>
-        <?php if (empty($devoirs)): ?>
-            <li>Aucun devoir à venir pour ce module.</li>
-        <?php endif; ?>
-    </ul>
-
-    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2])): ?>
-        <a href="ajouter_devoir.php?module_id=<?= $id_module ?>" class="btn btn-outline-success mt-3">
-            <i class="fas fa-plus"></i> Ajouter un devoir pour ce module
-        </a>
-    <?php endif; ?>
 </div>
 </body>
 </html>

@@ -41,8 +41,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
     <meta charset="UTF-8">
     <title>Accueil - Modules</title>
     <?php include("link.php"); ?>
-    <!-- Ajout de Font Awesome pour les icônes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <?php include("navbar.php"); ?>
@@ -204,9 +202,23 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                                         <?= count(json_decode($quiz['questions'], true)) ?> questions
                                     </span>
                                     <div>
-                                        <a href="faire_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-play"></i> Commencer
-                                        </a>
+                                        <?php
+                                        $vis = $visibilites[$quiz['id_quiz']] ?? null;
+                                        $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
+                                        $canStart = true;
+                                        if ($vis && strtotime($vis['date_debut']) > time() && in_array($role, [0, 1])) {
+                                            $canStart = false;
+                                        }
+                                        ?>
+                                        <?php if ($canStart): ?>
+                                            <a href="faire_quiz.php?id=<?= $quiz['id_quiz'] ?>" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-play"></i> Commencer
+                                            </a>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-lock"></i> Pas encore disponible
+                                            </button>
+                                        <?php endif; ?>
                                         <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2])): ?>
                                             <button 
                                                 class="btn btn-sm btn-outline-light ms-2" 
@@ -287,7 +299,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
 </div>
 
 <!-- Scripts JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 var visibilityModal = document.getElementById('visibilityModal');
 if (visibilityModal) {
