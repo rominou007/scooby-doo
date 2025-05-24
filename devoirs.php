@@ -54,10 +54,7 @@ $devoirs = $stmt->fetchAll();
                             </p>
                         </div>
                         <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], [1, 2])): ?>
-                            <div class="card-footer d-flex justify-content-end gap-2">
-                                <a href="modifier_devoir.php?id=<?= $devoir['id_devoir'] ?>" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </a>
+                            <div class="card-footer d-flex justify-content-end">
                                 <a href="supprimer_devoir.php?id=<?= $devoir['id_devoir'] ?>" onclick="return confirm('Voulez-vous vraiment supprimer ce devoir ?');" class="btn btn-sm btn-danger">
                                     <i class="fas fa-trash"></i> Supprimer
                                 </a>
