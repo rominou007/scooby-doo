@@ -534,7 +534,7 @@ if ($quiz_id && ($user_role == 1 || $user_role == 2)) {
                         <tr>
                             <td><?= htmlspecialchars($module['code_module'] . ' - ' . $module['nom_module']) ?></td>
                             <td>
-                                `<?php if ($user_role == 0): ?>
+                                <?php if ($user_role == 0): ?>
                                     <?php if (isset($notes[$module['id_module']])): ?>
                                         <div>
                                             <strong><?= round($notes[$module['id_module']]['moyenne'], 1) ?>/20</strong>

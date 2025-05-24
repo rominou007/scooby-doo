@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUpdateTime = $pdo->prepare("UPDATE quiz_resultats SET temps_utilise = ? WHERE id_quiz = ? AND id_etudiant = ?");
             $stmtUpdateTime->execute([$temps_ecoule, $id_quiz, $_SESSION['user_id']]);
         }
-    }x  
+    }  
 }
 
 // Insertion du résultat si pas déjà fait
