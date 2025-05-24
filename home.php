@@ -31,11 +31,12 @@ try {
         // Récupérer les modules de la classe
         $modules_query = "
             SELECT m.id_module, m.code_module, m.nom_module,
-                   CONCAT(u.prenom, ' ', u.nom) AS professor_name
+                   GROUP_CONCAT(DISTINCT CONCAT(u.prenom, ' ', u.nom) SEPARATOR ', ') AS professor_name
             FROM modules m
-            JOIN profs_modules pm ON m.id_module = pm.id_module
-            JOIN user u ON pm.id_prof = u.id_user
+            LEFT JOIN profs_modules pm ON m.id_module = pm.id_module
+            LEFT JOIN user u ON pm.id_prof = u.id_user
             WHERE m.class_id = ?
+            GROUP BY m.id_module, m.code_module, m.nom_module
         ";
         $modules_stmt = $pdo->prepare($modules_query);
         $modules_stmt->execute([$student_class['class_id']]);
