@@ -1,13 +1,15 @@
 <?php
-    session_start();
-    require("db.php");
+session_start();
+require("db.php");
 
-//  Vérification si l'utilisateur est connecté et est un admin
- if (!isset($_SESSION["id"]) || $_SESSION["access"] != 2 ) {
-     // Rediriger vers la page de connexion ou une page d'erreur
-     header("Location: index.php");
-exit(); }
-`
+// Vérification si l'utilisateur est connecté et est un admin ou prof
+if (!isset($_SESSION["user_id"]) || !in_array($_SESSION["role"], [1, 2])) {
+    // Rediriger vers la page de connexion
+    header("Location: login.php");
+    exit();
+}
+
+
     // Déterminer le type de formulaire à afficher (par défaut: élève)
     $form_type = isset($_GET['type']) ? $_GET['type'] : 'student';
 
