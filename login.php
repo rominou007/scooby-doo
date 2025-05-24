@@ -1,6 +1,15 @@
 <?php
+require_once "db.php";
 session_start();
-require("db.php");
+
+// Vérifier s'il y a au moins un admin (role = 2)
+$stmt = $pdo->query("SELECT COUNT(*) FROM user WHERE role = 2");
+$adminCount = $stmt->fetchColumn();
+
+if ($adminCount == 0 && basename($_SERVER['PHP_SELF']) != 'register.php') {
+    header("Location: register.php?type=admin");
+    exit();
+}
 
 // Redirige si déjà connecté
 if (isset($_SESSION['user_id'])) {
