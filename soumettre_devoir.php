@@ -18,7 +18,7 @@ $chemin = "uploads/soumissions/" . uniqid() . "_" . $nom_fichier;
 
 if (move_uploaded_file($_FILES['fichier']['tmp_name'], $chemin)) {
     $stmt = $pdo->prepare("
-        INSERT INTO soumissions (id_devoir, id_etudiant, chemin_fichier, date_soumission)
+        INSERT INTO soumission (id_devoir, id_etudiant, chemin_fichier, date_soumission)
         VALUES (:id_devoir, :id_etudiant, :chemin, NOW())
     ");
     $stmt->execute([
@@ -27,7 +27,7 @@ if (move_uploaded_file($_FILES['fichier']['tmp_name'], $chemin)) {
         'chemin' => $chemin
     ]);
 
-    header("Location: devoir.php?devoir_id=" . $devoir_id . "&success=1");
+    header("Location: devoir_zoom.php?devoir_id=$devoir_id&success=1");
     exit;
 } else {
     die("Erreur de téléversement.");

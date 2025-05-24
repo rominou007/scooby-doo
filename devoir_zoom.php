@@ -27,11 +27,10 @@ $is_student = isset($_SESSION['role']) && $_SESSION['role'] === 0;
 
 $soumission_exist = false;
 if ($is_student) {
-    // Vérifier si l'étudiant a déjà soumis ce devoir
     $stmt2 = $pdo->prepare("SELECT * FROM soumission WHERE id_devoir = :id_devoir AND id_etudiant = :id_etudiant");
     $stmt2->execute([
         'id_devoir' => $devoir_id,
-        'id_etudiant' => $_SESSION['id_user']
+        'id_etudiant' => $_SESSION['user_id']
     ]);
     $soumission_exist = $stmt2->fetch();
 }
@@ -58,20 +57,26 @@ if ($is_student) {
                 Vous avez déjà soumis ce devoir le <?= htmlspecialchars($soumission_exist['date_soumission']) ?>.
             </div>
             <a href="<?= htmlspecialchars($soumission_exist['chemin_fichier']) ?>" target="_blank" class="btn btn-secondary mb-3">Voir votre soumission</a>
-        <?php endif; ?>
 
-        <form method="post" enctype="multipart/form-data" action="soumettre_devoir.php">
-            <input type="hidden" name="devoir_id" value="<?= $devoir_id ?>">
-            <div class="mb-3">
-                <label for="fichier" class="form-label">Votre fichier (PDF, DOCX...)</label>
-                <input type="file" name="fichier" id="fichier" class="form-control" <?= $soumission_exist ? '' : 'required' ?>>
-            </div>
-            <div class="mb-3">
-                <label for="commentaire" class="form-label">Commentaire (optionnel)</label>
-                <textarea name="commentaire" id="commentaire" class="form-control"><?= htmlspecialchars($soumission_exist['commentaire'] ?? '') ?></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary"><?= $soumission_exist ? 'Mettre à jour la soumission' : 'Soumettre' ?></button>
-        </form>
+            <!-- Formulaire de suppression -->
+            <form method="post" action="supprimer_soumission.php" onsubmit="return confirm('Voulez-vous vraiment supprimer votre soumission ?');" class="mb-3">
+                <input type="hidden" name="devoir_id" value="<?= $devoir_id ?>">
+                <button type="submit" class="btn btn-danger">Supprimer la soumission</button>
+            </form>
+        <?php else: ?>
+            <form method="post" enctype="multipart/form-data" action="soumettre_devoir.php">
+                <input type="hidden" name="devoir_id" value="<?= $devoir_id ?>">
+                <div class="mb-3">
+                    <label for="fichier" class="form-label">Votre fichier (PDF, DOCX...)</label>
+                    <input type="file" name="fichier" id="fichier" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="commentaire" class="form-label">Commentaire (optionnel)</label>
+                    <textarea name="commentaire" id="commentaire" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Soumettre</button>
+            </form>
+        <?php endif; ?>
 
     <?php elseif ($is_prof): ?>
         <h3>Soumissions des étudiants</h3>
