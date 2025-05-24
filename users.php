@@ -11,15 +11,36 @@
     
     // Récupérer le filtre de rôle (si présent)
     $filter_role = isset($_GET['role']) ? (int)$_GET['role'] : null;
+    $search_term = isset($_GET['search']) ? $_GET['search'] : null;
     
-    // Construire la requête SQL avec ou sans filtre
+    // Préparer les conditions SQL et les paramètres
+    $conditions = [];
+    $params = [];
+    $sql_base = "SELECT * FROM user";
+    
+    // Appliquer le filtre de rôle si défini
     if ($filter_role !== null) {
-        $stmt = $pdo->prepare("SELECT * FROM user WHERE role = :role ORDER BY nom, prenom");
-        $stmt->execute(['role' => $filter_role]);
-        $listUsers = $stmt->fetchAll();
-    } else {
-        $listUsers = $pdo->query("SELECT * FROM user ORDER BY nom, prenom")->fetchAll();
+        $conditions[] = "role = :role";
+        $params['role'] = $filter_role;
     }
+    
+    // Appliquer le filtre de recherche si défini
+    if ($search_term !== null && !empty($search_term)) {
+        $conditions[] = "(prenom LIKE :search OR nom LIKE :search OR email LIKE :search)";
+        $params['search'] = '%' . $search_term . '%';
+    }
+    
+    // Construire la requête complète
+    if (!empty($conditions)) {
+        $sql = $sql_base . " WHERE " . implode(" AND ", $conditions) . " ORDER BY nom, prenom";
+    } else {
+        $sql = $sql_base . " ORDER BY nom, prenom";
+    }
+    
+    // Exécuter la requête
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $listUsers = $stmt->fetchAll();
     
     // Récupérer le nombre d'utilisateurs par rôle pour les statistiques
     $stats = [
@@ -28,15 +49,6 @@
         'prof' => $pdo->query("SELECT COUNT(*) FROM user WHERE role = 1")->fetchColumn(),
         'student' => $pdo->query("SELECT COUNT(*) FROM user WHERE role = 0")->fetchColumn()
     ];
-    if (!empty($_GET['search'])) {
-        $search = '%' . $_GET['search'] . '%';
-        $stmt = $pdo->prepare("SELECT * FROM user WHERE prenom LIKE :search OR nom LIKE :search OR email LIKE :search");
-        $stmt->execute(['search' => $search]);
-        $listUsers = $stmt->fetchAll();
-    } else {
-        $listUsers = $pdo->query("SELECT * FROM user")->fetchAll();
-    }
-
 ?>
 
 <!DOCTYPE html>
