@@ -172,59 +172,23 @@
                                         <div class="btn-group" role="group">
                                             <!-- Bouton d'envoi de message -->
                                             <?php if ($user["id_user"] != $_SESSION['user_id']): ?>
-                                                <a href="new_conversation.php?receveur_id=<?= $user["id_user"] ?>" class="btn btn-sm btn-info" title="Envoyer un message">
+                                                <a href="creer_conversation.php?receveur_id=<?= $user["id_user"] ?>" class="btn btn-sm btn-info" title="Envoyer un message">
                                                     <i class="fa-solid fa-envelope"></i>
                                                 </a>
                                             <?php endif; ?>
                                             
-                                            <!-- Bouton d'édition -->
-                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop<?= $user["id_user"] ?>" title="Modifier">
+                                            <!-- Bouton d'édition - Modifié pour utiliser une classe personnalisée -->
+                                            <button type="button" class="btn btn-sm btn-primary edit-user-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop<?= $user["id_user"] ?>" title="Modifier">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
                                             
-                                            <!-- Bouton de suppression -->
-                                            <a href="delete_user.php?id=<?= $user["id_user"] ?>" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                            <!-- Bouton de suppression - Modifié pour utiliser une classe personnalisée -->
+                                            <a href="delete_user.php?id=<?= $user["id_user"] ?>" class="btn btn-sm btn-danger delete-user-btn" title="Supprimer">
                                                 <i class="fa-solid fa-trash"></i>
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
-
-                                <!-- Modal d'édition (inchangé) -->
-                                <div class="modal fade" id="staticBackdrop<?= $user["id_user"] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                    <!-- Contenu modal existant -->
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Modifier l'utilisateur</h1>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form action="edit_user.php" method="post">
-                                                    <input type="hidden" name="id_user" value="<?= $user["id_user"] ?>">
-                                                    <label for="prenom" class="form-label">Prénom</label>
-                                                    <input required type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars($user["prenom"]) ?>">
-                                                    <label for="nom" class="form-label">Nom</label>
-                                                    <input required type="text" class="form-control" id="nom" name="nom" value="<?= htmlspecialchars($user["nom"]) ?>">
-                                                    <label for="email" class="form-label">Email</label>
-                                                    <input required type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($user["email"]) ?>">
-
-                                                    <label for="acces" class="form-label">Rôle</label>
-                                                    <select name="acces" id="acces" class="form-control">
-                                                        <option value="0" <?= $user["role"] == 0 ? "selected" : "" ?>>Étudiant</option>
-                                                        <option value="1" <?= $user["role"] == 1 ? "selected" : "" ?>>Professeur</option>
-                                                        <option value="2" <?= $user["role"] == 2 ? "selected" : "" ?>>Administrateur</option>
-                                                    </select>
-                                                
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                    <input type="submit" value="Modifier" class="btn btn-primary">
-                                                </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -236,6 +200,54 @@
             </div>
         </div>
     </div>
+
+    <!-- Placer les modals APRÈS la fermeture du tableau -->
+    <?php foreach($listUsers as $user): ?>
+        <!-- Modal d'édition (corrigée) -->
+        <div class="modal fade edit-user-modal" id="staticBackdrop<?= $user["id_user"] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel<?= $user["id_user"] ?>" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel<?= $user["id_user"] ?>">Modifier l'utilisateur</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="edit_user.php" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="id_user" value="<?= $user["id_user"] ?>">
+                            
+                            <div class="mb-3">
+                                <label for="prenom<?= $user["id_user"] ?>" class="form-label">Prénom</label>
+                                <input required type="text" class="form-control" id="prenom<?= $user["id_user"] ?>" name="prenom" value="<?= htmlspecialchars($user["prenom"]) ?>">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nom<?= $user["id_user"] ?>" class="form-label">Nom</label>
+                                <input required type="text" class="form-control" id="nom<?= $user["id_user"] ?>" name="nom" value="<?= htmlspecialchars($user["nom"]) ?>">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email<?= $user["id_user"] ?>" class="form-label">Email</label>
+                                <input required type="email" class="form-control" id="email<?= $user["id_user"] ?>" name="email" value="<?= htmlspecialchars($user["email"]) ?>">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="acces<?= $user["id_user"] ?>" class="form-label">Rôle</label>
+                                <select name="acces" id="acces<?= $user["id_user"] ?>" class="form-control">
+                                    <option value="0" <?= $user["role"] == 0 ? "selected" : "" ?>>Étudiant</option>
+                                    <option value="1" <?= $user["role"] == 1 ? "selected" : "" ?>>Professeur</option>
+                                    <option value="2" <?= $user["role"] == 2 ? "selected" : "" ?>>Administrateur</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <button type="submit" class="btn btn-primary">Modifier</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
 
     <script>
         // Confirmation avant suppression

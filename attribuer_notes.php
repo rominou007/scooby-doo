@@ -112,43 +112,6 @@ if ($selected_module) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attribution de notes</title>
     <?php include("link.php"); ?>
-    <style>
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            background-color: #f8f9fa;
-            z-index: 100;
-            padding: 15px 0;
-        }
-        .note-input {
-            max-width: 80px;
-        }
-        .student-row:nth-child(odd) {
-            background-color: rgba(0, 0, 0, 0.03);
-        }
-        .student-row {
-            transition: all 0.2s ease;
-        }
-        .student-row:hover {
-            background-color: rgba(0, 123, 255, 0.1);
-        }
-        .notes-container {
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        .btn-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 99;
-        }
-        .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-        .invalid-note {
-            border-color: #dc3545;
-        }
-    </style>
 </head>
 <body>
     <?php include("navbar.php"); ?>

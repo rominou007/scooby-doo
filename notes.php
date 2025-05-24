@@ -176,27 +176,6 @@ if ($quiz_id && ($user_role == 1 || $user_role == 2)) {
         <title>Mes notes</title>
     <?php endif; ?>
     <?php include("link.php"); ?>
-    <style>
-        .completion-badge {
-            font-size: 0.8rem;
-            vertical-align: middle;
-        }
-        .progress {
-            height: 8px;
-        }
-        .filter-bar {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .stats-card {
-            transition: transform 0.2s ease;
-        }
-        .stats-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
 </head>
 <?php include("navbar.php"); ?>
 <body>

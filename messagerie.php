@@ -189,7 +189,7 @@
             <!-- Vue de conversation spécifique -->
             <div class="row mb-3">
                 <div class="col">
-                    <a href="messagerie.php" class="btn btn-outline-secondary">&larr; Retour aux conversations</a>
+                    <a href="messagerie.php" class="btn btn-outline-black">&larr; Retour aux conversations</a>
                 </div>
             </div>
             
