@@ -67,16 +67,17 @@ if ($user_role == 2) { // Admin
 } else { // Étudiant
     // L'étudiant voit les quiz des modules de sa classe qui sont visibles pour lui
     $stmt = $pdo->prepare("
-        SELECT q.*, m.nom_module, u.nom AS prof_nom, u.prenom AS prof_prenom
+        SELECT DISTINCT q.*, m.nom_module, u.nom AS prof_nom, u.prenom AS prof_prenom
         FROM quiz q
         JOIN modules m ON q.id_module = m.id_module
         LEFT JOIN user u ON q.id_prof = u.id_user
         JOIN student_classes sc ON sc.student_id = ?
         LEFT JOIN quiz_visibilite qv ON q.id_quiz = qv.id_quiz
         WHERE 
-            (m.class_id = sc.class_id)
+            m.class_id = sc.class_id
             AND (
-                (qv.cible = 'tous')
+                qv.id_quiz IS NULL 
+                OR qv.cible = 'tous'
                 OR (qv.cible = 'classe' AND qv.id_cible = sc.class_id)
                 OR (qv.cible = 'eleve' AND qv.id_cible = ?)
             )
