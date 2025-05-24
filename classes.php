@@ -50,6 +50,7 @@ foreach ($classes as $classe) {
                             <small class="text-light ms-3">(Année : <?= htmlspecialchars($classe['annee_scolaire']) ?>)</small>
                         </h4>
                     </div>
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
                     <div>
                         <a href="register.php?type=student&class_id=<?= urlencode($classe['class_id']) ?>" class="btn btn-warning btn-sm me-2">
                             <i class="fas fa-user-plus"></i> Ajouter un étudiant
@@ -60,6 +61,7 @@ foreach ($classes as $classe) {
                             <i class="fas fa-trash"></i> Supprimer la classe
                         </a>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <div class="card-body">
                     <?php if (empty($classes_etudiants[$classe['class_id']])): ?>
