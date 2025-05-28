@@ -123,6 +123,42 @@ $documents = $stmt->fetchAll();
     <h1><?= htmlspecialchars($module['nom_module']) ?></h1>
     <p><?= htmlspecialchars($module['description']) ?></p>
 
+    <!-- Après la description du module, ajoutez ce code -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5>Code module: <?= htmlspecialchars($module['code_module']) ?></h5>
+        
+        <?php
+        // Récupérer les professeurs associés à ce module
+        $stmt = $pdo->prepare("
+            SELECT u.id_user, u.prenom, u.nom
+            FROM profs_modules pm
+            JOIN user u ON pm.id_prof = u.id_user
+            WHERE pm.id_module = :id_module
+            ORDER BY u.nom, u.prenom
+        ");
+        $stmt->execute(['id_module' => $id_module]);
+        $professors = $stmt->fetchAll();
+        
+        // Si c'est un étudiant et qu'il y a au moins un professeur associé
+        if (isset($_SESSION['role']) && $_SESSION['role'] == 0 && !empty($professors)):
+        ?>
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" id="contactProfDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-envelope me-1"></i> Contacter un professeur
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="contactProfDropdown">
+                    <?php foreach ($professors as $prof): ?>
+                        <li>
+                            <a class="dropdown-item" href="creer_conversation.php?receveur_id=<?= $prof['id_user'] ?>">
+                                <?= htmlspecialchars($prof['prenom'] . ' ' . $prof['nom']) ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    </div>
+
     <?php if (!empty($_GET['success'])): ?>
         <div class="alert alert-success">Cours ajouté avec succès.</div>
     <?php elseif ($error): ?>

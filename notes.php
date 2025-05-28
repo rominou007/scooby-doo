@@ -144,8 +144,19 @@ if ($quiz_id && ($user_role == 1 || $user_role == 2)) {
         $stmt = $pdo->prepare("SELECT id_module, code_module, nom_module FROM modules WHERE class_id = :class_id ORDER BY nom_module ASC");
         $stmt->execute(['class_id' => $student_class_id]);
         $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } elseif ($user_role == 1) {
+        // Prof : voit uniquement les modules qu'il enseigne via la table profs_modules
+        $stmt = $pdo->prepare("
+            SELECT m.id_module, m.code_module, m.nom_module 
+            FROM modules m
+            JOIN profs_modules pm ON m.id_module = pm.id_module
+            WHERE pm.id_prof = :user_id
+            ORDER BY m.nom_module ASC
+        ");
+        $stmt->execute(['user_id' => $user_id]);
+        $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
-        // Prof/admin : voient tous les modules
+        // Admin : voit tous les modules
         $stmt = $pdo->query("SELECT id_module, code_module, nom_module FROM modules ORDER BY nom_module ASC");
         $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -597,6 +608,9 @@ if ($quiz_id && ($user_role == 1 || $user_role == 2)) {
                                     <div class="btn-group" role="group">
                                         <a href="notes.php?module_id=<?= $module['id_module'] ?>" class="btn btn-sm btn-info">
                                             <i class="fas fa-tasks me-1"></i>Quiz
+                                        </a>
+                                        <a href="voir_notes_module.php?module_id=<?= $module['id_module'] ?>" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye me-1"></i>Notes étudiants
                                         </a>
                                         <a href="attribuer_notes.php?module_id=<?= $module['id_module'] ?>" class="btn btn-sm btn-success">
                                             <i class="fas fa-plus me-1"></i>Notes

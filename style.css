@@ -258,3 +258,24 @@ body, html {
 .invalid-note {
     border-color: #dc3545;
 }
+.stats-card {
+    transition: transform 0.2s;
+}
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.table-notes th, .table-notes td {
+    vertical-align: middle;
+}
+.note-row:nth-child(odd) {
+    background-color: rgba(0,0,0,0.05);
+}
+.note-row {
+    padding: 8px 0;
+}
+.student-card {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+}
