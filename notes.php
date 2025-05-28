@@ -19,6 +19,11 @@ $class_id = isset($_GET['class_id']) ? intval($_GET['class_id']) : null;
 
 // Vérifier si un module spécifique est demandé par GET
 $module_id = isset($_GET['module_id']) ? intval($_GET['module_id']) : null;
+        // Récupérer la classe de l'étudiant
+        $stmt = $pdo->prepare("SELECT class_id FROM student_classes WHERE student_id = :id_user LIMIT 1");
+        $stmt->execute(['id_user' => $user_id]);
+        $student_class = $stmt->fetch(PDO::FETCH_ASSOC);
+        $student_class_id = $student_class ? $student_class['class_id'] : null;
 
 // Si on veut voir les résultats d'un quiz spécifique (professeur uniquement)
 if ($quiz_id && ($user_role == 1 || $user_role == 2)) {
@@ -134,12 +139,22 @@ if ($quiz_id && ($user_role == 1 || $user_role == 2)) {
     unset($quiz); // Détruire la référence
 } else {
     // Code existant pour la liste des modules et notes
-    $stmt = $pdo->query("SELECT id_module, code_module, nom_module FROM modules ORDER BY nom_module ASC");
-    $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($user_role == 0 && $student_class_id) {
+        // L'étudiant ne voit que les modules de sa classe
+        $stmt = $pdo->prepare("SELECT id_module, code_module, nom_module FROM modules WHERE class_id = :class_id ORDER BY nom_module ASC");
+        $stmt->execute(['class_id' => $student_class_id]);
+        $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        // Prof/admin : voient tous les modules
+        $stmt = $pdo->query("SELECT id_module, code_module, nom_module FROM modules ORDER BY nom_module ASC");
+        $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     // Récupérer les notes de l'utilisateur si étudiant
     $notes = [];
     if ($user_role == 0) {
+
+        
         // Récupérer les notes et calculer la moyenne pondérée
         $stmt = $pdo->prepare("
             SELECT id_module, 
