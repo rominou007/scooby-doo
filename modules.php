@@ -296,9 +296,6 @@ foreach ($pdo->query("SELECT id_user, prenom, nom FROM user WHERE role = 0") as 
                             
                             <?php if ($user_role == 1 || $user_role == 2): ?>
                                 <div>
-                                    <a href="edit_module.php?id=<?= $module['id_module'] ?>" class="btn btn-outline-secondary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
                                     <?php if ($user_role == 2): // Seul l'admin peut supprimer ?>
                                         <button type="button" class="btn btn-outline-danger ms-1" 
                                                 onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce module?')) 

@@ -340,7 +340,9 @@
                             <i class="fas fa-comments fa-3x text-muted mb-3"></i>
                             <p class="lead">Vous n'avez pas encore de conversations.</p>
                             <p>Pour démarrer une conversation, contactez un autre utilisateur.</p>
-                            <a href="users.php" class="btn btn-primary">Voir les utilisateurs</a>
+                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 2): // Admin ?>
+                                <a href="users.php" class="btn btn-primary">Voir les utilisateurs</a>
+                            <?php endif; ?>                               
                         </div>
                     <?php endif; ?>
                 </div>

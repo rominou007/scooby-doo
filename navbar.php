@@ -44,6 +44,9 @@ if ($user_id) {
                     <!-- Notes (tous) -->
                     <li class="nav-item"><a class="nav-link py-1" href="notes.php"><i class="fas fa-star"></i> Notes</a></li>
 
+                    <!-- Forum (tous) -->
+                    <li class="nav-item"><a class="nav-link py-1" href="forum.php"><i class="fas fa-comments"></i> Forum</a></li>
+
                     <!-- Planning (tous) -->
                     <li class="nav-item"><a class="nav-link py-1" href="planning.php"><i class="fas fa-calendar-alt"></i> Planning</a></li>
 

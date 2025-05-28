@@ -49,7 +49,6 @@ if (!$user) {
         </tr>
     </table>
 
-    <a href="edit_profile.php" class="btn btn-warning">Modifier mon profil</a>
 </div>
 
 </body>
